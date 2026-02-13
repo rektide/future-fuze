@@ -1,0 +1,69 @@
+#@ load("@ytt:data", "data")
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: #@ data.values.namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+        - name: otel-collector
+          image: #@ data.values.otelCollector.image
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CLICKHOUSE_ENDPOINT
+              value: #@ "tcp://ch-server:" + str(data.values.clickhouse.nativePort) + "?dial_timeout=10s"
+            - name: HYPERDX_OTEL_EXPORTER_CLICKHOUSE_DATABASE
+              value: default
+            - name: HYPERDX_LOG_LEVEL
+              value: #@ data.values.app.logLevel
+            - name: OPAMP_SERVER_URL
+              value: #@ "http://app:" + str(data.values.app.opampPort)
+            - name: HYPERDX_OTEL_EXPORTER_CREATE_LEGACY_SCHEMA
+              value: "true"
+          ports:
+            - name: health
+              containerPort: #@ data.values.otelCollector.ports.health
+            - name: fluentd
+              containerPort: #@ data.values.otelCollector.ports.fluentd
+            - name: otlp-grpc
+              containerPort: #@ data.values.otelCollector.ports.otlpGrpc
+            - name: otlp-http
+              containerPort: #@ data.values.otelCollector.ports.otlpHttp
+            - name: metrics
+              containerPort: #@ data.values.otelCollector.ports.metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: #@ data.values.namespace
+spec:
+  type: ClusterIP
+  selector:
+    app: otel-collector
+  ports:
+    - name: health
+      port: #@ data.values.otelCollector.ports.health
+      targetPort: #@ data.values.otelCollector.ports.health
+    - name: fluentd
+      port: #@ data.values.otelCollector.ports.fluentd
+      targetPort: #@ data.values.otelCollector.ports.fluentd
+    - name: otlp-grpc
+      port: #@ data.values.otelCollector.ports.otlpGrpc
+      targetPort: #@ data.values.otelCollector.ports.otlpGrpc
+    - name: otlp-http
+      port: #@ data.values.otelCollector.ports.otlpHttp
+      targetPort: #@ data.values.otelCollector.ports.otlpHttp
+    - name: metrics
+      port: #@ data.values.otelCollector.ports.metrics
+      targetPort: #@ data.values.otelCollector.ports.metrics

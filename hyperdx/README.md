@@ -39,15 +39,15 @@ Legend:
 
 | Component | Raw YAML | Kustomize | Helm | CUE | Pulumi | Jsonnet/Tanka | cdk8s | Carvel ytt |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Namespace / shared primitives | x | - | - | - | - | - | - | - |
-| app (website + API) | x | - | - | - | - | - | - | - |
-| otel-collector | x | - | - | - | - | - | - | - |
-| opamp supervisor behavior | ~ | - | - | - | - | - | - | - |
-| ch-server (ClickHouse) | x | - | - | - | - | - | - | - |
-| db (MongoDB) | x | - | - | - | - | - | - | - |
-| ingress/service exposure | ~ | - | - | - | - | - | - | - |
-| secrets/config modeling | ~ | - | - | - | - | - | - | - |
-| storage/PVC strategy | x | - | - | - | - | - | - | - |
+| Namespace / shared primitives | x | - | - | - | - | - | x | x |
+| app (website + API) | x | - | - | - | - | - | x | x |
+| otel-collector | x | - | - | - | - | - | x | x |
+| opamp supervisor behavior | ~ | - | - | - | - | - | ~ | ~ |
+| ch-server (ClickHouse) | x | - | - | - | - | - | x | x |
+| db (MongoDB) | x | - | - | - | - | - | x | x |
+| ingress/service exposure | ~ | - | - | - | - | - | ~ | ~ |
+| secrets/config modeling | ~ | - | - | - | - | - | x | x |
+| storage/PVC strategy | x | - | - | - | - | - | x | x |
 
 ## Candidate Systems Beyond CUE + Pulumi
 
@@ -89,7 +89,30 @@ For each implementation track:
 - testability in CI
 - onboarding and maintenance burden
 
-## Directory Layout (Proposed)
+## Implementations
+
+### manifests/
+Hand-written Kubernetes YAML - the baseline reference implementation.
+
+### cdk8s/
+TypeScript-based manifests using cdk8s. Generates type-safe Kubernetes resources.
+
+```bash
+cd cdk8s
+pnpm install
+pnpm build
+pnpm synth
+```
+
+### ytt/
+Carvel ytt templates. YAML-native templating with values file.
+
+```bash
+cd ytt
+ytt -f .
+```
+
+## Directory Layout
 
 ```text
 hyperdx/
@@ -100,6 +123,27 @@ hyperdx/
     otel-collector.yaml
     ch-server.yaml
     db.yaml
+  cdk8s/
+    src/
+      config.ts
+      namespace.ts
+      db.ts
+      ch-server.ts
+      otel-collector.ts
+      app.ts
+      main.ts
+    package.json
+    tsconfig.json
+    cdk8s.yaml
+    README.md
+  ytt/
+    values.yaml
+    namespace.yaml
+    db.yaml
+    ch-server.yaml
+    otel-collector.yaml
+    app.yaml
+    README.md
   kustomize/
     base/
     overlays/
@@ -108,8 +152,6 @@ hyperdx/
   cue/
   pulumi/
   jsonnet/
-  cdk8s/
-  ytt/
 ```
 
 ## Notes on Collector/Supervisor Focus
