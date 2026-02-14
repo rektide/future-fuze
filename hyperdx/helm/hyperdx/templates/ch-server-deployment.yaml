@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ch-server
+  namespace: {{ include "hyperdx.namespace" . }}
+  labels:
+    {{- include "hyperdx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "hyperdx.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: clickhouse
+  template:
+    metadata:
+      labels:
+        {{- include "hyperdx.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: clickhouse
+    spec:
+      containers:
+        - name: ch-server
+          image: {{ .Values.clickhouse.image }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT
+              value: "1"
+          ports:
+            - name: http
+              containerPort: {{ .Values.clickhouse.httpPort }}
+            - name: native
+              containerPort: {{ .Values.clickhouse.nativePort }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/clickhouse-server/config.xml
+              subPath: config.xml
+            - name: config
+              mountPath: /etc/clickhouse-server/users.xml
+              subPath: users.xml
+            - name: ch-data
+              mountPath: /var/lib/clickhouse
+            - name: ch-logs
+              mountPath: /var/log/clickhouse-server
+      volumes:
+        - name: config
+          configMap:
+            name: ch-server-config
+        - name: ch-data
+          persistentVolumeClaim:
+            claimName: ch-data
+        - name: ch-logs
+          persistentVolumeClaim:
+            claimName: ch-logs

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+  namespace: {{ include "hyperdx.namespace" . }}
+  labels:
+    {{- include "hyperdx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+spec:
+  type: {{ .Values.app.serviceType }}
+  selector:
+    {{- include "hyperdx.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+  ports:
+    - name: api
+      port: {{ .Values.app.apiPort }}
+      targetPort: {{ .Values.app.apiPort }}
+    - name: app
+      port: {{ .Values.app.appPort }}
+      targetPort: {{ .Values.app.appPort }}
+    - name: opamp
+      port: {{ .Values.app.opampPort }}
+      targetPort: {{ .Values.app.opampPort }}

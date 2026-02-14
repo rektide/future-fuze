@@ -1,0 +1,11 @@
+apiVersion: v2
+name: hyperdx
+description: HyperDX observability platform Helm chart
+type: application
+version: 0.1.0
+appVersion: "2.16.0"
+maintainers:
+  - name: rektide
+    url: https://github.com/rektide
+sources:
+  - https://github.com/hyperdxio/hyperdx

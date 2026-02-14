@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+  namespace: {{ include "hyperdx.namespace" . }}
+  labels:
+    {{- include "hyperdx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "hyperdx.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: db
+  template:
+    metadata:
+      labels:
+        {{- include "hyperdx.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: db
+    spec:
+      containers:
+        - name: db
+          image: {{ .Values.db.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: mongo
+              containerPort: 27017
+          volumeMounts:
+            - name: db-data
+              mountPath: /data/db
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: hyperdx-db-data

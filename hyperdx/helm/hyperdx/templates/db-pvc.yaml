@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hyperdx-db-data
+  namespace: {{ include "hyperdx.namespace" . }}
+  labels:
+    {{- include "hyperdx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: db
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.db.storageSize }}

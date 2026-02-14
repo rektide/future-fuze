@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: {{ include "hyperdx.namespace" . }}
+  labels:
+    {{- include "hyperdx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "hyperdx.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: app
+  template:
+    metadata:
+      labels:
+        {{- include "hyperdx.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: app
+    spec:
+      containers:
+        - name: app
+          image: {{ .Values.app.image }}
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: app-config
+          env:
+            - name: HYPERDX_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: HYPERDX_API_KEY
+          ports:
+            - name: api
+              containerPort: {{ .Values.app.apiPort }}
+            - name: app
+              containerPort: {{ .Values.app.appPort }}
+            - name: opamp
+              containerPort: {{ .Values.app.opampPort }}

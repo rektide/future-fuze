@@ -39,15 +39,15 @@ Legend:
 
 | Component | Raw YAML | Kustomize | Helm | CUE | Pulumi | Jsonnet/Tanka | cdk8s | Carvel ytt |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Namespace / shared primitives | x | - | - | x | - | - | x | x |
-| app (website + API) | x | - | - | x | - | - | x | x |
-| otel-collector | x | - | - | x | - | - | x | x |
-| opamp supervisor behavior | ~ | - | - | ~ | - | - | ~ | ~ |
-| ch-server (ClickHouse) | x | - | - | x | - | - | x | x |
-| db (MongoDB) | x | - | - | x | - | - | x | x |
-| ingress/service exposure | ~ | - | - | ~ | - | - | ~ | ~ |
-| secrets/config modeling | ~ | - | - | x | - | - | x | x |
-| storage/PVC strategy | x | - | - | x | - | - | x | x |
+| Namespace / shared primitives | x | x | x | x | - | - | x | x |
+| app (website + API) | x | x | x | x | - | - | x | x |
+| otel-collector | x | x | x | x | - | - | x | x |
+| opamp supervisor behavior | ~ | ~ | ~ | ~ | - | - | ~ | ~ |
+| ch-server (ClickHouse) | x | x | x | x | - | - | x | x |
+| db (MongoDB) | x | x | x | x | - | - | x | x |
+| ingress/service exposure | ~ | ~ | ~ | ~ | - | - | ~ | ~ |
+| secrets/config modeling | ~ | x | x | x | - | - | x | x |
+| storage/PVC strategy | x | x | x | x | - | - | x | x |
 
 ## Candidate Systems Beyond CUE + Pulumi
 
@@ -120,6 +120,24 @@ cd cue
 cue export -e output -o manifest.yaml
 ```
 
+### helm/
+Helm chart with templated values.
+
+```bash
+cd helm
+helm template hyperdx ./hyperdx
+helm install hyperdx ./hyperdx
+```
+
+### kustomize/
+Kustomize base with dev/prod overlays.
+
+```bash
+cd kustomize
+kubectl kustomize overlays/dev
+kubectl apply -k overlays/prod
+```
+
 ## Directory Layout
 
 ```text
@@ -161,11 +179,32 @@ hyperdx/
     app.cue
     export.cue
     README.md
-  kustomize/
-    base/
-    overlays/
   helm/
     hyperdx/
+      Chart.yaml
+      values.yaml
+      templates/
+        _helpers.tpl
+        namespace.yaml
+        db-*.yaml
+        ch-server-*.yaml
+        otel-collector-*.yaml
+        app-*.yaml
+      README.md
+  kustomize/
+    base/
+      kustomization.yaml
+      namespace.yaml
+      db.yaml
+      ch-server.yaml
+      otel-collector.yaml
+      app.yaml
+    overlays/
+      dev/
+        kustomization.yaml
+      prod/
+        kustomization.yaml
+    README.md
   pulumi/
   jsonnet/
 ```

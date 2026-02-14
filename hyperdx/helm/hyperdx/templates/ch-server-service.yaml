@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ch-server
+  namespace: {{ include "hyperdx.namespace" . }}
+  labels:
+    {{- include "hyperdx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "hyperdx.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+  ports:
+    - name: http
+      port: {{ .Values.clickhouse.httpPort }}
+      targetPort: {{ .Values.clickhouse.httpPort }}
+    - name: native
+      port: {{ .Values.clickhouse.nativePort }}
+      targetPort: {{ .Values.clickhouse.nativePort }}

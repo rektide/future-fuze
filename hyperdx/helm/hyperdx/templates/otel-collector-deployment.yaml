@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: {{ include "hyperdx.namespace" . }}
+  labels:
+    {{- include "hyperdx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: otel-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "hyperdx.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: otel-collector
+  template:
+    metadata:
+      labels:
+        {{- include "hyperdx.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: otel-collector
+    spec:
+      containers:
+        - name: otel-collector
+          image: {{ .Values.otelCollector.image }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CLICKHOUSE_ENDPOINT
+              value: "tcp://ch-server:{{ .Values.clickhouse.nativePort }}?dial_timeout=10s"
+            - name: HYPERDX_OTEL_EXPORTER_CLICKHOUSE_DATABASE
+              value: default
+            - name: HYPERDX_LOG_LEVEL
+              value: {{ .Values.app.logLevel }}
+            - name: OPAMP_SERVER_URL
+              value: "http://app:{{ .Values.app.opampPort }}"
+            - name: HYPERDX_OTEL_EXPORTER_CREATE_LEGACY_SCHEMA
+              value: "true"
+          ports:
+            - name: health
+              containerPort: {{ .Values.otelCollector.ports.health }}
+            - name: fluentd
+              containerPort: {{ .Values.otelCollector.ports.fluentd }}
+            - name: otlp-grpc
+              containerPort: {{ .Values.otelCollector.ports.otlpGrpc }}
+            - name: otlp-http
+              containerPort: {{ .Values.otelCollector.ports.otlpHttp }}
+            - name: metrics
+              containerPort: {{ .Values.otelCollector.ports.metrics }}
