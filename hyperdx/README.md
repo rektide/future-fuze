@@ -39,15 +39,15 @@ Legend:
 
 | Component | Raw YAML | Kustomize | Helm | CUE | Pulumi | Jsonnet/Tanka | cdk8s | Carvel ytt |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Namespace / shared primitives | x | - | - | - | - | - | x | x |
-| app (website + API) | x | - | - | - | - | - | x | x |
-| otel-collector | x | - | - | - | - | - | x | x |
-| opamp supervisor behavior | ~ | - | - | - | - | - | ~ | ~ |
-| ch-server (ClickHouse) | x | - | - | - | - | - | x | x |
-| db (MongoDB) | x | - | - | - | - | - | x | x |
-| ingress/service exposure | ~ | - | - | - | - | - | ~ | ~ |
-| secrets/config modeling | ~ | - | - | - | - | - | x | x |
-| storage/PVC strategy | x | - | - | - | - | - | x | x |
+| Namespace / shared primitives | x | - | - | x | - | - | x | x |
+| app (website + API) | x | - | - | x | - | - | x | x |
+| otel-collector | x | - | - | x | - | - | x | x |
+| opamp supervisor behavior | ~ | - | - | ~ | - | - | ~ | ~ |
+| ch-server (ClickHouse) | x | - | - | x | - | - | x | x |
+| db (MongoDB) | x | - | - | x | - | - | x | x |
+| ingress/service exposure | ~ | - | - | ~ | - | - | ~ | ~ |
+| secrets/config modeling | ~ | - | - | x | - | - | x | x |
+| storage/PVC strategy | x | - | - | x | - | - | x | x |
 
 ## Candidate Systems Beyond CUE + Pulumi
 
@@ -112,6 +112,14 @@ cd ytt
 ytt -f .
 ```
 
+### cue/
+CUE-based manifests with schema validation.
+
+```bash
+cd cue
+cue export -e output -o manifest.yaml
+```
+
 ## Directory Layout
 
 ```text
@@ -144,12 +152,20 @@ hyperdx/
     otel-collector.yaml
     app.yaml
     README.md
+  cue/
+    values.cue
+    namespace.cue
+    db.cue
+    ch-server.cue
+    otel-collector.cue
+    app.cue
+    export.cue
+    README.md
   kustomize/
     base/
     overlays/
   helm/
     hyperdx/
-  cue/
   pulumi/
   jsonnet/
 ```
