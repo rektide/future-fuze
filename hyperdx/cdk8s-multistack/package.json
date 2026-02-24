@@ -1,0 +1,10 @@
+{
+  "name": "hyperdx-cdk8s-multistack",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.6.5",
+  "scripts": {
+    "typecheck": "pnpm -r run typecheck",
+    "synth": "pnpm -r run synth"
+  }
+}

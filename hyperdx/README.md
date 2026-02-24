@@ -104,6 +104,17 @@ pnpm build
 pnpm synth
 ```
 
+### cdk8s-multistack/
+Standalone pnpm monorepo for split cdk8s stacks, with storage managed independently from runtime workloads.
+
+```bash
+cd cdk8s-multistack
+pnpm install
+pnpm synth
+```
+
+See [`/cdk8s-multistack/README.md`](/cdk8s-multistack/README.md) for package-level stack boundaries, PVC claim contracts, and init-container bootstrap flow.
+
 ### ytt/
 Carvel ytt templates. YAML-native templating with values file.
 
@@ -161,6 +172,16 @@ hyperdx/
     package.json
     tsconfig.json
     cdk8s.yaml
+    README.md
+  cdk8s-multistack/
+    package.json
+    pnpm-workspace.yaml
+    packages/
+      contracts/
+      storage-db/
+      storage-clickhouse/
+      storage-init/
+      workloads-stateful/
     README.md
   ytt/
     values.yaml

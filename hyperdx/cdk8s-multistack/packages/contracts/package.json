@@ -1,0 +1,16 @@
+{
+  "name": "@hyperdx-cdk8s-multistack/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@typescript/native-preview": "latest"
+  }
+}

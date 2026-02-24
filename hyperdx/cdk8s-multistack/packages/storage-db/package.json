@@ -1,0 +1,20 @@
+{
+  "name": "@hyperdx-cdk8s-multistack/storage-db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "synth": "cdk8s synth"
+  },
+  "dependencies": {
+    "@hyperdx-cdk8s-multistack/contracts": "workspace:*",
+    "cdk8s": "^2.68.0",
+    "constructs": "^10.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@typescript/native-preview": "latest",
+    "cdk8s-cli": "^2.68.0"
+  }
+}
