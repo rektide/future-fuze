@@ -56,6 +56,7 @@ Useful manifest authoring systems to consider:
 - Kustomize (overlay composition)
 - Jsonnet + Tanka (programmable manifests)
 - cdk8s (TypeScript/Python/etc. to Kubernetes objects)
+- Timoni (CUE modules + bundle lifecycle)
 - Carvel ytt (YAML-native templating)
 - kpt (package-oriented configuration management)
 
@@ -149,6 +150,17 @@ kubectl kustomize overlays/dev
 kubectl apply -k overlays/prod
 ```
 
+### timoni/
+Timoni modules and bundle composition for HyperDX.
+
+```bash
+cd timoni
+timoni bundle vet -f hyperdx.bundle.cue
+timoni bundle build -f hyperdx.bundle.cue
+```
+
+See [`/timoni/README.md`](/timoni/README.md).
+
 ## Directory Layout
 
 ```text
@@ -226,6 +238,14 @@ hyperdx/
       prod/
         kustomization.yaml
     README.md
+  timoni/
+    hyperdx.bundle.cue
+    modules/
+      storage/
+      storage-init/
+      stateful/
+      app/
+    README.md
   pulumi/
   jsonnet/
 ```
@@ -269,6 +289,12 @@ The collector Dockerfiles are multi-stage and combine several moving parts (coll
 - Pros: Built into kubectl, declarative overlays, no templating language
 - Cons: JSON patches are verbose, complex patches hard to read, limited logic
 - Best for: Environment-specific patches, kubectl-native workflows, simple customizations
+
+**Timoni/**
+- Pros: Strong CUE type validation plus lifecycle-aware bundles and instance inventory
+- Cons: Newer ecosystem, module boilerplate can feel heavy for small one-off charts
+- Best for: Teams that want explicit module contracts, staged stack composition, and safe drift-aware upgrades
+- Notable: Local `file://` module references in [`/timoni/hyperdx.bundle.cue`](/timoni/hyperdx.bundle.cue) make multi-module development easy before publishing OCI artifacts
 
 ## Alternative Decomposition Approaches
 
