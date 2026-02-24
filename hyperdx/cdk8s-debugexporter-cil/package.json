@@ -1,0 +1,19 @@
+{
+  "name": "hyperdx-cdk8s-debugexporter-cil",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "synth": "cdk8s synth",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "cdk8s": "^2.70.48",
+    "constructs": "^10.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "cdk8s-cli": "^2.204.9",
+    "typescript": "^5.9.3"
+  }
+}
