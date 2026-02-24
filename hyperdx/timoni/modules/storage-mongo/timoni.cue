@@ -1,6 +1,6 @@
 package main
 
-import templates "timoni.sh/hyperdx/storage/templates"
+import templates "timoni.sh/hyperdx/storage-mongo/templates"
 
 values: templates.#Config
 

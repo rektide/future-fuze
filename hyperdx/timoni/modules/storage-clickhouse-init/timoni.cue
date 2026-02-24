@@ -1,6 +1,6 @@
 package main
 
-import templates "timoni.sh/hyperdx/stateful/templates"
+import templates "timoni.sh/hyperdx/storage-clickhouse-init/templates"
 
 values: templates.#Config
 

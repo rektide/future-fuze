@@ -241,9 +241,12 @@ hyperdx/
   timoni/
     hyperdx.bundle.cue
     modules/
-      storage/
-      storage-init/
-      stateful/
+      storage-mongo/
+      storage-mongo-init/
+      stateful-mongo/
+      storage-clickhouse/
+      storage-clickhouse-init/
+      stateful-clickhouse/
       app/
     README.md
   pulumi/

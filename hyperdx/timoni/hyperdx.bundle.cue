@@ -2,34 +2,52 @@ bundle: {
   apiVersion: "v1alpha1"
   name:       "hyperdx"
   instances: {
-    "a-storage": {
+    "a-storage-mongo": {
       module: {
-        url: "file://./modules/storage"
+        url: "file://./modules/storage-mongo"
+      }
+      namespace: "hyperdx"
+      values: {
+        storage: size: "20Gi"
+      }
+    }
+    "b-storage-mongo-init": {
+      module: {
+        url: "file://./modules/storage-mongo-init"
+      }
+      namespace: "hyperdx"
+    }
+    "c-stateful-mongo": {
+      module: {
+        url: "file://./modules/stateful-mongo"
+      }
+      namespace: "hyperdx"
+    }
+    "d-storage-clickhouse": {
+      module: {
+        url: "file://./modules/storage-clickhouse"
       }
       namespace: "hyperdx"
       values: {
         storage: {
-          db: size: "20Gi"
-          clickhouse: {
-            dataSize: "100Gi"
-            logSize:  "10Gi"
-          }
+          dataSize: "100Gi"
+          logSize:  "10Gi"
         }
       }
     }
-    "b-storage-init": {
+    "e-storage-clickhouse-init": {
       module: {
-        url: "file://./modules/storage-init"
+        url: "file://./modules/storage-clickhouse-init"
       }
       namespace: "hyperdx"
     }
-    "c-stateful": {
+    "f-stateful-clickhouse": {
       module: {
-        url: "file://./modules/stateful"
+        url: "file://./modules/stateful-clickhouse"
       }
       namespace: "hyperdx"
     }
-    "d-app": {
+    "g-app": {
       module: {
         url: "file://./modules/app"
       }
