@@ -32,3 +32,14 @@ pnpm synth
 ## Localhost-only mode
 
 Set `cilium.localhostOnly: true` in `src/config.ts` to generate policy that denies ingress from `world` and allows only `cluster` and `host` entities for the configured NodePorts.
+
+## Example L2 announcement trace debugger
+
+- [`examples/otel-trace-debugger-l2announcement.yaml`](/cdk8s-debugexporter-cil/examples/otel-trace-debugger-l2announcement.yaml)
+- Includes a trace-only OpenTelemetry collector debug pipeline, a `LoadBalancer` service, `CiliumLoadBalancerIPPool`, and `CiliumL2AnnouncementPolicy` for that service.
+- Uses `externalTrafficPolicy: Cluster` because Cilium L2 announcements are not compatible with `externalTrafficPolicy: Local`.
+
+Reference docs:
+
+- [`Cilium` `L2 Announcements / L2 Aware LB (Beta)`](https://docs.cilium.io/en/stable/network/l2-announcements/)
+- [`Cilium` `LoadBalancer IP Address Management (LB IPAM)`](https://docs.cilium.io/en/stable/network/lb-ipam/)

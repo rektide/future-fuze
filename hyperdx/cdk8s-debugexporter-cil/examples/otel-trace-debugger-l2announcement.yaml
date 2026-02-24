@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: otel-debug-exporter
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-trace-debugger-config
+  namespace: otel-debug-exporter
+data:
+  collector.yaml: |
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 256
+        spike_limit_mib: 64
+      batch:
+        send_batch_size: 512
+        timeout: 2s
+      attributes/sanitize:
+        actions:
+          - key: http.request.header.authorization
+            action: delete
+          - key: db.statement
+            action: delete
+
+    exporters:
+      debug/traces:
+        verbosity: detailed
+        sampling_initial: 25
+        sampling_thereafter: 250
+
+    service:
+      telemetry:
+        logs:
+          level: debug
+      extensions: [health_check]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, attributes/sanitize, batch]
+          exporters: [debug/traces]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-trace-debugger
+  namespace: otel-debug-exporter
+  labels:
+    app: otel-trace-debugger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-trace-debugger
+  template:
+    metadata:
+      labels:
+        app: otel-trace-debugger
+    spec:
+      containers:
+        - name: otel-trace-debugger
+          image: otel/opentelemetry-collector-contrib:0.102.1
+          args: ["--config=/conf/collector.yaml"]
+          ports:
+            - name: health
+              containerPort: 13133
+            - name: otlp-grpc
+              containerPort: 4317
+            - name: otlp-http
+              containerPort: 4318
+          volumeMounts:
+            - name: collector-config
+              mountPath: /conf/collector.yaml
+              subPath: collector.yaml
+      volumes:
+        - name: collector-config
+          configMap:
+            name: otel-trace-debugger-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-trace-debugger
+  namespace: otel-debug-exporter
+  labels:
+    app: otel-trace-debugger
+  annotations:
+    lbipam.cilium.io/ips: 10.0.10.42
+spec:
+  type: LoadBalancer
+  loadBalancerClass: io.cilium/l2-announcer
+  externalTrafficPolicy: Cluster
+  selector:
+    app: otel-trace-debugger
+  ports:
+    - name: otlp-grpc
+      protocol: TCP
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      protocol: TCP
+      port: 4318
+      targetPort: 4318
+    - name: health
+      protocol: TCP
+      port: 13133
+      targetPort: 13133
+---
+apiVersion: cilium.io/v2
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: otel-trace-debugger-pool
+spec:
+  blocks:
+    - cidr: 10.0.10.0/24
+  serviceSelector:
+    matchLabels:
+      app: otel-trace-debugger
+---
+apiVersion: cilium.io/v2alpha1
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: otel-trace-debugger-l2
+spec:
+  serviceSelector:
+    matchLabels:
+      app: otel-trace-debugger
+  nodeSelector:
+    matchExpressions:
+      - key: node-role.kubernetes.io/control-plane
+        operator: DoesNotExist
+  interfaces:
+    - ^eth[0-9]+
+  loadBalancerIPs: true

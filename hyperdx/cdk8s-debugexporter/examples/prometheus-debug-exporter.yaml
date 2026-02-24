@@ -1,0 +1,63 @@
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+receivers:
+  prometheus:
+    config:
+      global:
+        scrape_interval: 15s
+        scrape_timeout: 10s
+      scrape_configs:
+        - job_name: otel-collector
+          static_configs:
+            - targets: ["0.0.0.0:8888"]
+        - job_name: kube-state-metrics
+          static_configs:
+            - targets: ["kube-state-metrics.kube-system.svc.cluster.local:8080"]
+        - job_name: node-exporter
+          static_configs:
+            - targets: ["node-exporter.monitoring.svc.cluster.local:9100"]
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 256
+    spike_limit_mib: 64
+  batch:
+    send_batch_size: 1024
+    timeout: 5s
+  filter/keep-common:
+    error_mode: ignore
+    metrics:
+      metric:
+        - name == "up"
+        - name == "process_cpu_seconds_total"
+        - name == "process_resident_memory_bytes"
+        - IsMatch(name, "^node_.*")
+        - IsMatch(name, "^kube_.*")
+  resource/add_context:
+    attributes:
+      - key: deployment.environment
+        value: example
+        action: upsert
+      - key: telemetry.pipeline
+        value: prometheus-debug
+        action: upsert
+
+exporters:
+  debug/prom-metrics:
+    verbosity: detailed
+    sampling_initial: 20
+    sampling_thereafter: 200
+
+service:
+  telemetry:
+    logs:
+      level: debug
+  extensions: [health_check]
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [memory_limiter, filter/keep-common, resource/add_context, batch]
+      exporters: [debug/prom-metrics]

@@ -35,3 +35,9 @@ The generated `otel-debug-exporter-config` ConfigMap includes:
 - Prometheus exporter for scraped metrics
 
 The configuration is generated in `src/debug-exporter.ts`.
+
+## Example Prometheus metrics debug config
+
+An example collector config focused on Prometheus metrics with `debug` export is available at:
+
+- [`examples/prometheus-debug-exporter.yaml`](/cdk8s-debugexporter/examples/prometheus-debug-exporter.yaml)
