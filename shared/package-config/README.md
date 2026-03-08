@@ -68,16 +68,24 @@ node ./node_modules/@future-fuze/package-config/apply.ts --config prettier
 
 ### Package config source files
 
-TypeScript apply settings can be sourced from either JSON files or TypeScript modules:
+Package `devDependencies` and `scripts` settings are sourced from section files,
+not mixed nested structures:
 
 - `typescript/devDependencies.json` or `typescript/devDependencies.ts`
 - `typescript/scripts.json` or `typescript/scripts.ts`
-- optional monorepo root overrides in `typescript/recursive/`
-  - `typescript/recursive/devDependencies.json` or `.ts`
-  - `typescript/recursive/scripts.json` or `.ts`
+- `concurrently/devDependencies.json` or `concurrently/devDependencies.ts`
+- `concurrently/scripts.json` or `concurrently/scripts.ts`
+
+Optional monorepo root overrides can be provided in `recursive/` subfolders
+for configs that support package section updates:
+
+- `typescript/recursive/devDependencies.json` or `.ts`
+- `typescript/recursive/scripts.json` or `.ts`
+- `concurrently/recursive/devDependencies.json` or `.ts`
+- `concurrently/recursive/scripts.json` or `.ts`
 
 When using `.ts` files, export either the named key (`devDependencies` / `scripts`) or `config`.
 
 When applying from a monorepo root (detected via `pnpm-workspace.yaml` or npm `workspaces`),
-`typescript/recursive/*` is used when present. Leaf packages continue using non-recursive files.
+`recursive/*` is used when present. Leaf packages continue using non-recursive files.
 An empty recursive source file is treated as a no-op for that section.

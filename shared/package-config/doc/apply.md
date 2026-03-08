@@ -61,9 +61,12 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    a. honor `--conflict` behavior when existing prettier config differs
    a. honor `--dry-run` with clear output of planned changes
 1. create `package-config/concurrently/apply.ts`
-   a. apply `concurrently/scripts.json` settings to target `package.json`
+   a. apply `concurrently/devDependencies.json` and `concurrently/scripts.json` settings to target `package.json`
+   a. support `.ts` source alternatives (`devDependencies.ts` / `scripts.ts`) with named export (`devDependencies` / `scripts`) or `config`
    a. include `devDependencies.concurrently: "*"`
    a. include scripts `build: "concurrently build:*"` and `check: "concurrently check:*"`
+   a. if `concurrently/recursive/` sources exist and target is a monorepo root, use those instead of base sources for root-level apply
+   a. if target is a leaf package, ignore `concurrently/recursive/` sources
    a. honor `--conflict` behavior and `--dry-run`
 1. add tests
    a. fixture tests for npm and pnpm projects

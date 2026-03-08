@@ -14,30 +14,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-export function toOptionalStringRecord(
-	value: unknown,
-	locationDescription: string
-): Record<string, string> | undefined {
-	if (value === undefined) {
-		return undefined
-	}
-
-	if (!isRecord(value)) {
-		throw new Error(`${locationDescription} must be an object with string values`)
-	}
-
-	const result: Record<string, string> = {}
-	for (const [key, entryValue] of Object.entries(value)) {
-		if (typeof entryValue !== 'string') {
-			throw new Error(`${locationDescription}.${key} must be a string`)
-		}
-
-		result[key] = entryValue
-	}
-
-	return result
-}
-
 function applyStringRecordSection(
 	packageJson: Record<string, unknown>,
 	sectionName: PackageJsonSectionName,

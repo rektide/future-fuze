@@ -1,9 +1,4 @@
 {
-	"devDependencies": {
-		"concurrently": "*"
-	},
-	"scripts": {
-		"build": "concurrently build:*",
-		"check": "concurrently check:*"
-	}
+	"build": "concurrently build:*",
+	"check": "concurrently check:*"
 }
