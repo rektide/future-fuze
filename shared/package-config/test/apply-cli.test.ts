@@ -119,6 +119,19 @@ afterEach(async () => {
 		expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
 	})
 
+	test('applies recursively with --recursive', async () => {
+		const projectPath = await createFixtureProject('npm-workspace')
+		const result = await runApply(['--config', 'tsconfig', '--dry-run', '--recursive'], projectPath)
+
+		expect(result.code).toBe(0)
+		expect(result.stdout).toContain(`Applying configs in ${projectPath}`)
+		expect(result.stdout).toContain(join(projectPath, 'packages', 'a'))
+		expect(result.stdout).toContain(join(projectPath, 'packages', 'b'))
+
+		const installMatches = result.stdout.match(/\[dry-run\] npm install --save-dev @future-fuze\/package-config/g)
+		expect(installMatches?.length).toBe(3)
+	})
+
 		test('uses package metadata before lockfiles', async () => {
 			const projectPath = await createFixtureProject('pnpm-project')
 			const result = await runApply(['--config', 'tsconfig', '--dry-run'], projectPath)

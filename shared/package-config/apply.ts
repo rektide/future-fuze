@@ -8,6 +8,7 @@ import { cli, define } from 'gunshi'
 import conflictPlugin from './gunshi/conflict.ts'
 import dryRunPlugin from './gunshi/dry-run.ts'
 import updatePlugin from './gunshi/update.ts'
+import { collectApplyTargetRoots } from './internal/targets.ts'
 import { ensurePackageConfigDependency } from './internal/install.ts'
 import { parseApplyRuntimeOptions } from './internal/options.ts'
 import { loadProjectContext } from './internal/project.ts'
@@ -54,16 +55,33 @@ export const applyCommand = define({
 			multiple: true,
 			required: true,
 			description: 'Config to apply; pass multiple --config arguments or use --config all'
+		},
+		recursive: {
+			type: 'boolean',
+			short: 'r',
+			description: 'Apply to every package.json project recursively from current project root'
 		}
 	},
 	run: async ctx => {
 		const options = parseApplyRuntimeOptions(ctx.values)
-		const project = await loadProjectContext()
-		await ensurePackageConfigDependency(project, options)
-
+		const baseProject = await loadProjectContext()
 		const applyTargets = resolveApplyTargets(ctx.values.config)
-		for (const applyTarget of applyTargets) {
-			await configRunners[applyTarget](project, options)
+		const applyProjectRoots = await collectApplyTargetRoots({
+			cwd: baseProject.projectRoot,
+			recursive: ctx.values.recursive === true
+		})
+
+		for (const applyProjectRoot of applyProjectRoots) {
+			const project = await loadProjectContext(applyProjectRoot, baseProject.packageManager)
+			if (ctx.values.recursive === true) {
+				console.log(`Applying configs in ${project.projectRoot}`)
+			}
+
+			await ensurePackageConfigDependency(project, options)
+
+			for (const applyTarget of applyTargets) {
+				await configRunners[applyTarget](project, options)
+			}
 		}
 	}
 })

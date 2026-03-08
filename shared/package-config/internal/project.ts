@@ -48,7 +48,8 @@ export async function findProjectRoot(startDirectory = process.cwd()): Promise<s
 
 export async function detectPackageManager(
 	projectRoot: string,
-	packageJson: PackageJsonData
+	packageJson: PackageJsonData,
+	fallbackPackageManager?: PackageManager
 ): Promise<PackageManager> {
 	const managerFromMetadata = parsePackageManagerFromMetadata(packageJson.packageManager)
 	if (managerFromMetadata) {
@@ -63,17 +64,24 @@ export async function detectPackageManager(
 		return 'npm'
 	}
 
+	if (fallbackPackageManager) {
+		return fallbackPackageManager
+	}
+
 	// TODO: add optional environment-based detection fallback (e.g. npm_config_user_agent).
 	// We intentionally defer env detection to keep package metadata and lockfiles as priority.
 	return 'pnpm'
 }
 
-export async function loadProjectContext(cwd = process.cwd()): Promise<ProjectContext> {
+export async function loadProjectContext(
+	cwd = process.cwd(),
+	fallbackPackageManager?: PackageManager
+): Promise<ProjectContext> {
 	const projectRoot = await findProjectRoot(cwd)
 	const packageJsonPath = join(projectRoot, 'package.json')
 	const packageJsonText = await readFile(packageJsonPath, 'utf8')
 	const packageJson = JSON.parse(packageJsonText) as PackageJsonData
-	const packageManager = await detectPackageManager(projectRoot, packageJson)
+	const packageManager = await detectPackageManager(projectRoot, packageJson, fallbackPackageManager)
 
 	return {
 		cwd,
