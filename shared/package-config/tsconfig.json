@@ -1,0 +1,4 @@
+{
+	"extends": "@future-fuze/package-config/tsconfig/base.json",
+	"include": ["**/*.ts"]
+}
