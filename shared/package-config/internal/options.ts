@@ -1,29 +1,17 @@
 import type { ApplyRuntimeOptions, ConflictMode } from './types.ts'
 
-const allowedConflictModes = new Set<ConflictMode>(['error', 'overwrite', 'skip'])
-
-function getRecord(value: unknown): Record<string, unknown> {
-	if (typeof value === 'object' && value !== null) {
-		return value as Record<string, unknown>
-	}
-
-	return {}
+interface ApplyOptionValues {
+	update?: boolean
+	dryRun?: boolean
+	conflict?: ConflictMode
+	[key: string]: unknown
 }
 
-function parseConflictMode(value: unknown): ConflictMode {
-	if (typeof value === 'string' && allowedConflictModes.has(value as ConflictMode)) {
-		return value as ConflictMode
-	}
-
-	return 'error'
-}
-
-export function parseApplyRuntimeOptions(values: unknown): ApplyRuntimeOptions {
-	const record = getRecord(values)
+export function parseApplyRuntimeOptions(values: ApplyOptionValues): ApplyRuntimeOptions {
 
 	return {
-		update: record.update === true,
-		dryRun: record['dry-run'] === true || record.dryRun === true,
-		conflict: parseConflictMode(record.conflict)
+		update: values.update === true,
+		dryRun: values.dryRun === true,
+		conflict: values.conflict ?? 'error'
 	}
 }

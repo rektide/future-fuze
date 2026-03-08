@@ -13,7 +13,7 @@ export default function conflictPlugin() {
 		name: 'Apply Conflict Option',
 		setup: ctx => {
 			ctx.addGlobalOption('conflict', {
-				type: 'string',
+				type: 'enum',
 				default: 'error',
 				choices: [...conflictChoices],
 				description: 'Conflict behavior: error, overwrite, or skip'

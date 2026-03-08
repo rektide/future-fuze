@@ -89,38 +89,50 @@ afterEach(async () => {
 	await Promise.all(temporaryDirectories.splice(0).map(directory => rm(directory, { recursive: true, force: true })))
 })
 
-describe('apply CLI package manager detection', () => {
-	test('index command calls apply subcommand', async () => {
-		const projectPath = await createFixtureProject('npm-project')
-		const result = await runIndex(['apply', 'tsconfig', '--dry-run'], projectPath)
+	describe('apply CLI package manager detection', () => {
+		test('index command calls apply subcommand', async () => {
+			const projectPath = await createFixtureProject('npm-project')
+			const result = await runIndex(['apply', '--config', 'tsconfig', '--dry-run'], projectPath)
 
-		expect(result.code).toBe(0)
-		expect(result.stdout).toContain('[dry-run] npm install --save-dev @future-fuze/package-config')
-	})
+			expect(result.code).toBe(0)
+			expect(result.stdout).toContain('[dry-run] npm install --save-dev @future-fuze/package-config')
+		})
 
-	test('uses package metadata before lockfiles', async () => {
-		const projectPath = await createFixtureProject('pnpm-project')
-		const result = await runApply(['tsconfig', '--dry-run'], projectPath)
+		test('applies multiple configs in one invocation', async () => {
+			const projectPath = await createFixtureProject('npm-project')
+			const result = await runApply(
+				['--config', 'tsconfig', '--config', 'prettier', '--dry-run'],
+				projectPath
+			)
 
-		expect(result.code).toBe(0)
-		expect(result.stdout).toContain('[dry-run] pnpm add --save-dev @future-fuze/package-config')
-	})
+			expect(result.code).toBe(0)
+			expect(result.stdout).toContain('[dry-run] Create tsconfig.json')
+			expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
+		})
 
-	test('uses npm lockfile when metadata is missing', async () => {
-		const projectPath = await createFixtureProject('npm-project')
-		const result = await runApply(['tsconfig', '--dry-run'], projectPath)
+		test('uses package metadata before lockfiles', async () => {
+			const projectPath = await createFixtureProject('pnpm-project')
+			const result = await runApply(['--config', 'tsconfig', '--dry-run'], projectPath)
 
-		expect(result.code).toBe(0)
-		expect(result.stdout).toContain('[dry-run] npm install --save-dev @future-fuze/package-config')
-	})
+			expect(result.code).toBe(0)
+			expect(result.stdout).toContain('[dry-run] pnpm add --save-dev @future-fuze/package-config')
+		})
 
-	test('uses latest specifier when update flag is enabled', async () => {
-		const projectPath = await createFixtureProject('npm-project')
-		const result = await runApply(['tsconfig', '--dry-run', '--update'], projectPath)
+		test('uses npm lockfile when metadata is missing', async () => {
+			const projectPath = await createFixtureProject('npm-project')
+			const result = await runApply(['--config', 'tsconfig', '--dry-run'], projectPath)
 
-		expect(result.code).toBe(0)
-		expect(result.stdout).toContain('@future-fuze/package-config@latest')
-	})
+			expect(result.code).toBe(0)
+			expect(result.stdout).toContain('[dry-run] npm install --save-dev @future-fuze/package-config')
+		})
+
+		test('uses latest specifier when update flag is enabled', async () => {
+			const projectPath = await createFixtureProject('npm-project')
+			const result = await runApply(['--config', 'tsconfig', '--dry-run', '--update'], projectPath)
+
+			expect(result.code).toBe(0)
+			expect(result.stdout).toContain('@future-fuze/package-config@latest')
+		})
 })
 
 describe('apply CLI conflict handling', () => {
@@ -132,7 +144,7 @@ describe('apply CLI conflict handling', () => {
 			'utf8'
 		)
 
-		const result = await runApply(['tsconfig', '--dry-run'], projectPath)
+		const result = await runApply(['--config', 'tsconfig', '--dry-run'], projectPath)
 
 		expect(result.code).not.toBe(0)
 		expect(result.stderr).toContain('Conflict at')
@@ -142,7 +154,10 @@ describe('apply CLI conflict handling', () => {
 		const projectPath = await createFixtureProject('npm-project')
 		await writeFile(join(projectPath, '.prettierrc.json'), JSON.stringify({ semi: true }, null, 2), 'utf8')
 
-		const result = await runApply(['prettier', '--dry-run', '--conflict', 'skip'], projectPath)
+		const result = await runApply(
+			['--config', 'prettier', '--dry-run', '--conflict', 'skip'],
+			projectPath
+		)
 
 		expect(result.code).toBe(0)
 		expect(result.stdout).toContain('Conflict skipped')
@@ -153,11 +168,14 @@ describe('apply CLI conflict handling', () => {
 		const prettierPath = join(projectPath, '.prettierrc.json')
 		await writeFile(prettierPath, JSON.stringify({ semi: true }, null, 2), 'utf8')
 
-		const dryRunResult = await runApply(['prettier', '--dry-run', '--conflict', 'overwrite'], projectPath)
+		const dryRunResult = await runApply(
+			['--config', 'prettier', '--dry-run', '--conflict', 'overwrite'],
+			projectPath
+		)
 		expect(dryRunResult.code).toBe(0)
 		expect(dryRunResult.stdout).toContain('[dry-run] Apply Prettier config')
 
-		const applyResult = await runApply(['prettier', '--conflict', 'overwrite'], projectPath)
+		const applyResult = await runApply(['--config', 'prettier', '--conflict', 'overwrite'], projectPath)
 		expect(applyResult.code).toBe(0)
 
 		const savedText = await readFile(prettierPath, 'utf8')
@@ -169,7 +187,7 @@ describe('apply CLI conflict handling', () => {
 		const tsconfigPath = join(projectPath, 'tsconfig.json')
 		await writeFile(tsconfigPath, '{\n  // comment\n  "compilerOptions": {\n    "strict": true\n  }\n}\n', 'utf8')
 
-		const result = await runApply(['tsconfig', '--conflict', 'overwrite'], projectPath)
+		const result = await runApply(['--config', 'tsconfig', '--conflict', 'overwrite'], projectPath)
 		expect(result.code).toBe(0)
 
 		const savedText = await readFile(tsconfigPath, 'utf8')

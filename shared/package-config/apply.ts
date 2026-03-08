@@ -8,31 +8,52 @@ import { cli, define } from 'gunshi'
 import conflictPlugin from './gunshi/conflict.ts'
 import dryRunPlugin from './gunshi/dry-run.ts'
 import updatePlugin from './gunshi/update.ts'
-import prettierApplyCommand from './prettier/apply.ts'
-import typescriptApplyCommand from './typescript/apply.ts'
+import { ensurePackageConfigDependency } from './internal/install.ts'
+import { parseApplyRuntimeOptions } from './internal/options.ts'
+import { loadProjectContext } from './internal/project.ts'
+import { applyPrettierConfig } from './prettier/apply.ts'
+import { applyTypescriptConfig } from './typescript/apply.ts'
+
+const configChoices = ['tsconfig', 'prettier'] as const
+type ConfigChoice = (typeof configChoices)[number]
+
+const configRunners: Record<ConfigChoice, typeof applyTypescriptConfig> = {
+	tsconfig: applyTypescriptConfig,
+	prettier: applyPrettierConfig
+}
 
 export function createApplyPlugins() {
 	return [updatePlugin(), dryRunPlugin(), conflictPlugin()]
 }
 
-export const applySubCommands = {
-	tsconfig: typescriptApplyCommand,
-	prettier: prettierApplyCommand
-}
-
 export const applyCommand = define({
 	name: 'apply',
 	description: 'Apply shared package-config presets to a project',
-	run: () => {
-		console.log('Select a config to apply (tsconfig, prettier).')
+	args: {
+		config: {
+			type: 'enum',
+			choices: [...configChoices],
+			multiple: true,
+			required: true,
+			description: 'Config to apply; pass multiple --config arguments to apply more than one'
+		}
+	},
+	run: async ctx => {
+		const options = parseApplyRuntimeOptions(ctx.values)
+		const project = await loadProjectContext()
+		await ensurePackageConfigDependency(project, options)
+
+		const requestedConfigs = ctx.values.config
+		for (const config of requestedConfigs) {
+			await configRunners[config](project, options)
+		}
 	}
 })
 
 export async function main(argv = process.argv.slice(2)): Promise<void> {
 	await cli(argv, applyCommand, {
 		name: '@future-fuze/package-config apply',
-		plugins: createApplyPlugins(),
-		subCommands: applySubCommands
+		plugins: createApplyPlugins()
 	})
 }
 

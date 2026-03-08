@@ -15,7 +15,8 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
 
 1. `package-config/apply.ts`
    - CLI entrypoint for the apply meta-tool
-   - register gunshi plugins and subcommands
+   - register gunshi plugins
+   - define `--config` argument (repeatable) to select one or more configs to apply
 1. `package-config/internal/project.ts`
    - detect project root and load target `package.json`
    - detect package manager (`pnpm` vs `npm`) from package metadata first, then lockfiles
@@ -40,6 +41,7 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
 1. create `package-config/apply.ts` in small steps
    a. add `gunshi` dependency
    a. wire `gunshi/update.ts`, `gunshi/dry-run.ts`, and `gunshi/conflict.ts`
+   a. support repeatable `--config` argument to select apply targets
    a. ensure `@future-fuze/package-config` is installed in `devDependencies` when missing
    a. auto-detect `pnpm` or `npm` and use detected tool for installs
    a. if `--update` is set, install `@future-fuze/package-config@latest`
@@ -55,7 +57,7 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    a. fixture tests for npm and pnpm projects
    a. tests for `--update`, `--dry-run`, and `--conflict`
 1. update docs
-   a. usage examples for `apply tsconfig` and `apply prettier`
+   a. usage examples for `apply --config tsconfig` and `apply --config prettier`
    a. document conflict modes and dry-run behavior
 
 ## future tasks

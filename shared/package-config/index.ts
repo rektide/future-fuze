@@ -5,22 +5,13 @@ import { pathToFileURL } from 'node:url'
 
 import { cli, define } from 'gunshi'
 
-import { applySubCommands, createApplyPlugins } from './apply.ts'
+import { applyCommand, createApplyPlugins } from './apply.ts'
 
 const entryCommand = define({
 	name: 'package-config',
 	description: 'Manage shared package-config presets',
 	run: () => {
 		console.log('Select a subcommand (apply).')
-	}
-})
-
-const applyCommand = define({
-	name: 'apply',
-	description: 'Apply shared package-config presets to a project',
-	subCommands: applySubCommands,
-	run: () => {
-		console.log('Select a config to apply (tsconfig, prettier).')
 	}
 })
 

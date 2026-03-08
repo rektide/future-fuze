@@ -8,8 +8,9 @@ export default function dryRunPlugin() {
 		id: pluginId,
 		name: 'Apply Dry-Run Option',
 		setup: ctx => {
-			ctx.addGlobalOption('dry-run', {
+			ctx.addGlobalOption('dryRun', {
 				type: 'boolean',
+				toKebab: true,
 				description: 'Show planned changes without modifying files'
 			})
 		}
