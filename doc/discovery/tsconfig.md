@@ -242,3 +242,129 @@ Based on AGENTS.md guidelines (prefer `.ts` extensions, run directly, build only
 6. **Lint flags**: Remove explicit `noUnused*` flags (use oxlint instead)
 7. **Source maps**: Not needed with `noEmit: true`
 8. **CDK8S**: Keep `experimentalDecorators: true` only where needed
+
+## TypeScript Tooling
+
+### tsgo vs typescript Adoption
+
+| Project | Tool | Package | Version |
+|---------|------|---------|---------|
+| podinfo/cdk8s | `tsc` | `typescript` | `^4.9.5` |
+| podinfo/cdk8s-nodeport | `tsc` | `typescript` | (none) |
+| hyperdx/cdk8s | `tsc` | `typescript` | `^5.9.3` |
+| hyperdx/cdk8s-debugexporter | `tsc` | `typescript` | `^5.9.3` |
+| hyperdx/cdk8s-debugexporter-cil | `tsc` | `typescript` | `^5.9.3` |
+| hyperdx/cdk8s-cilium-nodeport | `tsc` | `typescript` | `^5.3.0` |
+| hyperdx/cdk8s-multistack | `tsgo` | `@typescript/native-preview` | `latest` |
+
+### tsgo Implementation Pattern (hyperdx/cdk8s-multistack)
+
+Only `hyperdx/cdk8s-multistack` uses `tsgo` from `@typescript/native-preview`.
+
+**Monorepo Structure:**
+```
+hyperdx/cdk8s-multistack/
+├── package.json              # Root: orchestrates with pnpm -r
+├── pnpm-workspace.yaml       # Defines packages/*
+├── tsconfig.base.json        # Shared tsconfig
+└── packages/
+    ├── contracts/
+    │   ├── package.json      # typecheck script uses tsgo
+    │   └── tsconfig.json     # extends base
+    ├── workloads-stateful/
+    ├── storage-init/
+    ├── storage-clickhouse/
+    └── storage-db/
+```
+
+**Root `package.json`:**
+```json
+{
+  "name": "hyperdx-cdk8s-multistack",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.6.5",
+  "scripts": {
+    "typecheck": "pnpm -r run typecheck",
+    "synth": "pnpm -r run synth"
+  }
+}
+```
+
+**Per-package `package.json` (e.g., contracts):**
+```json
+{
+  "name": "@hyperdx-cdk8s-multistack/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@typescript/native-preview": "latest"
+  }
+}
+```
+
+### Key Implementation Details
+
+1. **Dependency hoisting**: `@typescript/native-preview` is declared in each package's `devDependencies`, not at root. pnpm's lockfile shows platform-specific binaries are resolved correctly.
+
+2. **Script pattern**: All packages use identical typecheck script:
+   ```json
+   "typecheck": "tsgo --noEmit -p tsconfig.json"
+   ```
+
+3. **Version pinning**: Uses `"latest"` for `@typescript/native-preview` (dev build, not stable release)
+
+4. **Workspace dependencies**: Packages reference each other via `workspace:*` protocol:
+   ```json
+   "dependencies": {
+     "@hyperdx-cdk8s-multistack/contracts": "workspace:*"
+   }
+   ```
+
+5. **ESM-first**: Root and all packages have `"type": "module"`
+
+### Projects Still Using tsc
+
+The following projects use the standard `typescript` package with `tsc`:
+
+| Project | Script Pattern |
+|---------|----------------|
+| hyperdx/cdk8s | `"build": "tsc"` |
+| hyperdx/cdk8s-debugexporter | `"build": "tsc"` |
+| hyperdx/cdk8s-debugexporter-cil | `"build": "tsc"` |
+| hyperdx/cdk8s-cilium-nodeport | `"build": "tsc"` |
+| podinfo/cdk8s | No typecheck script (only `synth`) |
+
+**Issues with current tsc projects:**
+- No dedicated `typecheck` script (conflated with `build`)
+- Mixed typescript versions (4.9.5, 5.3.0, 5.9.3)
+- podinfo/cdk8s-nodeport has no typescript dependency at all
+
+### Recommended Tooling Pattern
+
+For consistency with AGENTS.md guidelines:
+
+```json
+{
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@typescript/native-preview": "latest"
+  }
+}
+```
+
+**Benefits of tsgo:**
+- Native Go implementation (faster than tsc)
+- Same CLI arguments as tsc
+- Aligns with AGENTS.md preference for `@typescript/native-preview`
