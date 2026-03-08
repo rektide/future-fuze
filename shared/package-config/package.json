@@ -6,13 +6,13 @@
 		"access": "public"
 	},
 	"exports": {
-		"./tsconfig/base.json": "./tsconfig/base.json",
-		"./tsconfig/cdk8s.json": "./tsconfig/cdk8s.json",
+		"./typescript/base.json": "./typescript/base.json",
+		"./typescript/cdk8s.json": "./typescript/cdk8s.json",
 		"./prettier": "./prettier/index.json",
 		"./prettier.json": "./prettier/index.json"
 	},
 	"files": [
-		"tsconfig",
+		"typescript",
 		"prettier"
 	]
 }

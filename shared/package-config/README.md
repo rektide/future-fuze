@@ -10,7 +10,7 @@ Extend the base config in your `tsconfig.json`:
 
 ```json
 {
-	"extends": "@future-fuze/package-config/tsconfig/base.json",
+	"extends": "@future-fuze/package-config/typescript/base.json",
 	"include": ["src/**/*.ts"]
 }
 ```
@@ -19,7 +19,7 @@ For CDK8S projects (enables decorators):
 
 ```json
 {
-	"extends": "@future-fuze/package-config/tsconfig/cdk8s.json",
+	"extends": "@future-fuze/package-config/typescript/cdk8s.json",
 	"include": ["src/**/*.ts"]
 }
 ```
