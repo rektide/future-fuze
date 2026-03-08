@@ -43,8 +43,8 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    a. ensure `@future-fuze/package-config` is installed in `devDependencies` when missing
    a. auto-detect `pnpm` or `npm` and use detected tool for installs
    a. if `--update` is set, install `@future-fuze/package-config@latest`
-1. create `package-config/tsconfig/apply.ts`
-   a. apply shared `@future-fuze/package-config/tsconfig/base.json` to target project
+1. create `package-config/typescript/apply.ts`
+   a. apply shared `@future-fuze/package-config/typescript/base.json` to target project
    a. honor `--conflict` behavior when target `tsconfig.json` already has incompatible settings
    a. honor `--dry-run` with clear output of planned changes
 1. create `package-config/prettier/apply.ts`

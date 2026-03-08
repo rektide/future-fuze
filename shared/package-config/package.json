@@ -2,17 +2,39 @@
 	"name": "@future-fuze/package-config",
 	"version": "0.0.2",
 	"type": "module",
+	"bin": {
+		"package-config-apply": "./apply.ts"
+	},
+	"scripts": {
+		"checkbuild:tsgo": "tsgo",
+		"test": "vitest run"
+	},
 	"publishConfig": {
 		"access": "public"
 	},
 	"exports": {
+		"./apply": "./apply.ts",
 		"./typescript/base.json": "./typescript/base.json",
 		"./typescript/cdk8s.json": "./typescript/cdk8s.json",
+		"./typescript/apply": "./typescript/apply.ts",
 		"./prettier": "./prettier/index.json",
-		"./prettier.json": "./prettier/index.json"
+		"./prettier.json": "./prettier/index.json",
+		"./prettier/apply": "./prettier/apply.ts"
 	},
 	"files": [
+		"apply.ts",
+		"gunshi",
+		"internal",
 		"typescript",
 		"prettier"
-	]
+	],
+	"dependencies": {
+		"gunshi": "^0.29.2",
+		"jsonc-parser": "^3.3.1"
+	},
+	"devDependencies": {
+		"@types/node": "^25.3.5",
+		"@typescript/native-preview": "7.0.0-dev.20260308.1",
+		"vitest": "^4.0.18"
+	}
 }
