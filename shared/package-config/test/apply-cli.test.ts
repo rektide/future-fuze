@@ -118,6 +118,7 @@ afterEach(async () => {
 		expect(result.stdout).toContain('[dry-run] Create tsconfig.json')
 		expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
 		expect(result.stdout).toContain('[dry-run] Apply concurrently package.json settings')
+		expect(result.stdout).toContain('[dry-run] Apply cdk8s package.json settings')
 	})
 
 	test('applies recursively with --recursive', async () => {
@@ -205,6 +206,63 @@ afterEach(async () => {
 		expect(leafBPackageJson.scripts['checkbuild:tsgo']).toBe('tsgo')
 	})
 
+	test('uses cdk8s recursive script at monorepo root only', async () => {
+		const projectPath = await createFixtureProject('npm-workspace')
+		const rootPackageJsonPath = join(projectPath, 'package.json')
+		const leafAPackageJsonPath = join(projectPath, 'packages', 'a', 'package.json')
+
+		await writeFile(
+			rootPackageJsonPath,
+			JSON.stringify(
+				{
+					name: 'fixture-npm-workspace',
+					version: '1.0.0',
+					private: true,
+					workspaces: ['packages/*'],
+					devDependencies: {
+						'@future-fuze/package-config': '*'
+					}
+				},
+				null,
+				2
+			),
+			'utf8'
+		)
+
+		const leafPackageJson = JSON.parse(await readFile(leafAPackageJsonPath, 'utf8')) as Record<string, unknown>
+		await writeFile(
+			leafAPackageJsonPath,
+			JSON.stringify(
+				{
+					...leafPackageJson,
+					devDependencies: {
+						'@future-fuze/package-config': '*'
+					}
+				},
+				null,
+				2
+			),
+			'utf8'
+		)
+
+		const result = await runApply(
+			['--config', 'cdk8s', '--recursive', '--conflict', 'overwrite'],
+			projectPath
+		)
+
+		expect(result.code).toBe(0)
+
+		const rootPackageJson = JSON.parse(await readFile(rootPackageJsonPath, 'utf8')) as {
+			scripts: Record<string, string>
+		}
+		expect(rootPackageJson.scripts['build:cdk8s']).toBe('pnpm -r run synth')
+
+		const leafPackageJsonAfter = JSON.parse(await readFile(leafAPackageJsonPath, 'utf8')) as {
+			scripts: Record<string, string>
+		}
+		expect(leafPackageJsonAfter.scripts['build:cdk8s']).toBe('cdk8s synth')
+	})
+
 		test('uses package metadata before lockfiles', async () => {
 			const projectPath = await createFixtureProject('pnpm-project')
 			const result = await runApply(['--config', 'tsconfig', '--dry-run'], projectPath)
@@ -231,6 +289,19 @@ afterEach(async () => {
 })
 
 describe('apply CLI conflict handling', () => {
+	test('applies cdk8s script for synth', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const packageJsonPath = join(projectPath, 'package.json')
+
+		const result = await runApply(['--config', 'cdk8s', '--conflict', 'overwrite'], projectPath)
+
+		expect(result.code).toBe(0)
+		const saved = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
+			scripts: Record<string, string>
+		}
+		expect(saved.scripts['build:cdk8s']).toBe('cdk8s synth')
+	})
+
 	test('applies concurrently config scripts and dependency', async () => {
 		const projectPath = await createFixtureProject('npm-project')
 		const packageJsonPath = join(projectPath, 'package.json')

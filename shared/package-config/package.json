@@ -16,6 +16,7 @@
 	"exports": {
 		"./index": "./index.ts",
 		"./apply": "./apply.ts",
+		"./cdk8s/apply": "./cdk8s/apply.ts",
 		"./concurrently/apply": "./concurrently/apply.ts",
 		"./typescript/base.json": "./typescript/base.json",
 		"./typescript/cdk8s.json": "./typescript/cdk8s.json",
@@ -27,6 +28,7 @@
 	"files": [
 		"index.ts",
 		"apply.ts",
+		"cdk8s",
 		"concurrently",
 		"gunshi",
 		"internal",

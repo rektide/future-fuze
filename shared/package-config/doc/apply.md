@@ -68,6 +68,13 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    a. if `concurrently/recursive/` sources exist and target is a monorepo root, use those instead of base sources for root-level apply
    a. if target is a leaf package, ignore `concurrently/recursive/` sources
    a. honor `--conflict` behavior and `--dry-run`
+1. create `package-config/cdk8s/apply.ts`
+   a. apply `cdk8s/scripts.json` settings to target `package.json`
+   a. include script `build:cdk8s: "cdk8s synth"`
+   a. support optional `.ts` source alternatives (`scripts.ts` / `devDependencies.ts`) with named export (`scripts` / `devDependencies`) or `config`
+   a. if `cdk8s/recursive/` sources exist and target is a monorepo root, use those instead of base sources for root-level apply
+   a. if target is a leaf package, ignore `cdk8s/recursive/` sources
+   a. honor `--conflict` behavior and `--dry-run`
 1. add tests
    a. fixture tests for npm and pnpm projects
    a. tests for `--update`, `--dry-run`, and `--conflict`
