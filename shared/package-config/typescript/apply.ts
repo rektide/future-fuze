@@ -5,9 +5,9 @@ import {
 	loadNamedStringRecordConfig,
 	tryLoadNamedStringRecordConfig
 } from '../internal/config-source.ts'
+import { applyPackageJsonSections } from '../internal/package-json-sections.ts'
 import { resolveConflictAction } from '../internal/conflict.ts'
 import {
-	parseJson,
 	parseJsonWithComments,
 	readTextFileIfExists,
 	stringifyJson,
@@ -91,112 +91,19 @@ export async function applyTypescriptConfig(
 	})
 }
 
-function applyStringRecordSection(
-	packageJson: Record<string, unknown>,
-	sectionName: 'devDependencies' | 'scripts',
-	targetValues: Record<string, string>,
-	options: ApplyRuntimeOptions,
-	packageJsonPath: string
-): boolean {
-	if (Object.keys(targetValues).length === 0) {
-		return false
-	}
-
-	const existingSection = packageJson[sectionName]
-	let mutableSection: Record<string, unknown>
-	let changed = false
-
-	if (existingSection === undefined) {
-		mutableSection = {}
-		packageJson[sectionName] = mutableSection
-		changed = true
-	} else if (isRecord(existingSection)) {
-		mutableSection = existingSection
-	} else {
-		const shouldOverwrite = resolveConflictAction({
-			mode: options.conflict,
-			filePath: packageJsonPath,
-			message: `${sectionName} exists but is not an object`
-		})
-
-		if (!shouldOverwrite) {
-			return changed
-		}
-
-		mutableSection = {}
-		packageJson[sectionName] = mutableSection
-		changed = true
-	}
-
-	for (const [key, value] of Object.entries(targetValues)) {
-		const existingValue = mutableSection[key]
-		if (existingValue === undefined) {
-			mutableSection[key] = value
-			changed = true
-			continue
-		}
-
-		if (existingValue === value) {
-			continue
-		}
-
-		const shouldOverwrite = resolveConflictAction({
-			mode: options.conflict,
-			filePath: packageJsonPath,
-			message: `${sectionName}.${key} is ${String(existingValue)} but target is ${value}`
-		})
-
-		if (!shouldOverwrite) {
-			continue
-		}
-
-		mutableSection[key] = value
-		changed = true
-	}
-
-	return changed
-}
-
 async function applyTypescriptPackageJsonConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
 ): Promise<void> {
-	const packageJsonText = await readTextFileIfExists(project.packageJsonPath)
-	if (!packageJsonText) {
-		throw new Error(`Missing package.json at ${project.packageJsonPath}`)
-	}
-
-	const packageJson = parseJson(packageJsonText, project.packageJsonPath)
-	if (!isRecord(packageJson)) {
-		throw new Error(`package.json root must be an object at ${project.packageJsonPath}`)
-	}
-
 	const targetDevDependencies = await loadTypescriptPackageSectionConfig(project, 'devDependencies')
 	const targetScripts = await loadTypescriptPackageSectionConfig(project, 'scripts')
 
-	const changedDevDependencies = applyStringRecordSection(
-		packageJson,
-		'devDependencies',
-		targetDevDependencies,
-		options,
-		project.packageJsonPath
-	)
-	const changedScripts = applyStringRecordSection(
-		packageJson,
-		'scripts',
-		targetScripts,
-		options,
-		project.packageJsonPath
-	)
-
-	if (!changedDevDependencies && !changedScripts) {
-		console.log('TypeScript package.json settings are already up-to-date')
-		return
-	}
-
-	await writeTextFileIfChanged(project.packageJsonPath, stringifyJson(packageJson), {
-		dryRun: options.dryRun,
-		label: 'Apply TypeScript package.json settings'
+	await applyPackageJsonSections(project, options, {
+		devDependencies: targetDevDependencies,
+		scripts: targetScripts
+	}, {
+		updated: 'Apply TypeScript package.json settings',
+		noChange: 'TypeScript package.json settings are already up-to-date'
 	})
 }
 

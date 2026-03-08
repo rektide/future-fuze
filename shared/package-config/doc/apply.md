@@ -60,6 +60,11 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    a. apply shared `@future-fuze/package-config/prettier` configuration to target project
    a. honor `--conflict` behavior when existing prettier config differs
    a. honor `--dry-run` with clear output of planned changes
+1. create `package-config/concurrently/apply.ts`
+   a. apply `concurrently/scripts.json` settings to target `package.json`
+   a. include `devDependencies.concurrently: "*"`
+   a. include scripts `build: "concurrently build:*"` and `check: "concurrently check:*"`
+   a. honor `--conflict` behavior and `--dry-run`
 1. add tests
    a. fixture tests for npm and pnpm projects
    a. tests for `--update`, `--dry-run`, and `--conflict`

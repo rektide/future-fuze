@@ -117,6 +117,7 @@ afterEach(async () => {
 		expect(result.code).toBe(0)
 		expect(result.stdout).toContain('[dry-run] Create tsconfig.json')
 		expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
+		expect(result.stdout).toContain('[dry-run] Apply concurrently package.json settings')
 	})
 
 	test('applies recursively with --recursive', async () => {
@@ -230,6 +231,38 @@ afterEach(async () => {
 })
 
 describe('apply CLI conflict handling', () => {
+	test('applies concurrently config scripts and dependency', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const packageJsonPath = join(projectPath, 'package.json')
+		await writeFile(
+			packageJsonPath,
+			JSON.stringify(
+				{
+					name: 'fixture-npm-project',
+					version: '1.0.0',
+					private: true,
+					devDependencies: {
+						'@future-fuze/package-config': '*'
+					}
+				},
+				null,
+				2
+			),
+			'utf8'
+		)
+
+		const result = await runApply(['--config', 'concurrently', '--conflict', 'overwrite'], projectPath)
+
+		expect(result.code).toBe(0)
+		const saved = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
+			devDependencies: Record<string, string>
+			scripts: Record<string, string>
+		}
+		expect(saved.devDependencies.concurrently).toBe('*')
+		expect(saved.scripts.build).toBe('concurrently build:*')
+		expect(saved.scripts.check).toBe('concurrently check:*')
+	})
+
 	test('applies typescript package.json scripts and devDependencies', async () => {
 		const projectPath = await createFixtureProject('npm-project')
 		const packageJsonPath = join(projectPath, 'package.json')

@@ -47,6 +47,7 @@ Use the apply tool to configure the current project in-place:
 ```sh
 node ./node_modules/@future-fuze/package-config/index.ts apply --config tsconfig
 node ./node_modules/@future-fuze/package-config/index.ts apply --config prettier
+node ./node_modules/@future-fuze/package-config/index.ts apply --config concurrently
 node ./node_modules/@future-fuze/package-config/index.ts apply --config tsconfig --config prettier
 node ./node_modules/@future-fuze/package-config/index.ts apply --config all
 node ./node_modules/@future-fuze/package-config/index.ts apply --config all --recursive
@@ -56,7 +57,7 @@ node ./node_modules/@future-fuze/package-config/apply.ts --config prettier
 
 ### Global flags
 
-- `--config <name>`: config to apply (`tsconfig`, `prettier`, `all`); repeat to apply multiple configs
+- `--config <name>`: config to apply (`tsconfig`, `prettier`, `concurrently`, `all`); repeat to apply multiple configs
 - `--recursive`, `-r`: apply to each discovered package project under current project root
 - `--dry-run`: print planned install/file changes without writing
 - `--update`: install `@future-fuze/package-config@latest` as a dev dependency

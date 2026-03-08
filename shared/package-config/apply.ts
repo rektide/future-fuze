@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 
 import { cli, define } from 'gunshi'
 
+import { applyConcurrentlyConfig } from './concurrently/apply.ts'
 import conflictPlugin from './gunshi/conflict.ts'
 import dryRunPlugin from './gunshi/dry-run.ts'
 import updatePlugin from './gunshi/update.ts'
@@ -15,7 +16,7 @@ import { loadProjectContext } from './internal/project.ts'
 import { applyPrettierConfig } from './prettier/apply.ts'
 import { applyTypescriptConfig } from './typescript/apply.ts'
 
-const applyTargetChoices = ['tsconfig', 'prettier'] as const
+const applyTargetChoices = ['tsconfig', 'prettier', 'concurrently'] as const
 type ApplyTargetChoice = (typeof applyTargetChoices)[number]
 
 const configChoices = ['all', ...applyTargetChoices] as const
@@ -23,7 +24,8 @@ type ConfigChoice = (typeof configChoices)[number]
 
 const configRunners: Record<ApplyTargetChoice, typeof applyTypescriptConfig> = {
 	tsconfig: applyTypescriptConfig,
-	prettier: applyPrettierConfig
+	prettier: applyPrettierConfig,
+	concurrently: applyConcurrentlyConfig
 }
 
 function resolveApplyTargets(configs: ConfigChoice[]): ApplyTargetChoice[] {
