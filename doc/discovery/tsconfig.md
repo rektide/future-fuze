@@ -368,3 +368,48 @@ For consistency with AGENTS.md guidelines:
 - Native Go implementation (faster than tsc)
 - Same CLI arguments as tsc
 - Aligns with AGENTS.md preference for `@typescript/native-preview`
+
+## Shared Config Package
+
+A shared configuration package is available at [`shared/config/`](../../shared/config/).
+
+### Structure
+
+```
+shared/config/
+├── package.json
+├── README.md
+├── tsconfig/
+│   ├── base.json      # Standard TypeScript config
+│   └── cdk8s.json     # CDK8S config (extends base, adds decorators)
+└── prettier/
+    └── index.json     # Prettier config
+```
+
+### Usage
+
+**TypeScript** - extend in your `tsconfig.json`:
+
+```json
+{
+  "extends": "@future-fuze/config/tsconfig/base.json",
+  "include": ["src/**/*.ts"]
+}
+```
+
+**CDK8S projects:**
+
+```json
+{
+  "extends": "@future-fuze/config/tsconfig/cdk8s.json",
+  "include": ["src/**/*.ts"]
+}
+```
+
+**Prettier** - reference in `package.json`:
+
+```json
+{
+  "prettier": "@future-fuze/config/prettier"
+}
+```
