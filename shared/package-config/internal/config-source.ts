@@ -24,7 +24,15 @@ function toStringRecord(value: unknown, sourceDescription: string): Record<strin
 	return result
 }
 
-async function loadFromTsModule(filePath: string, exportName: string): Promise<Record<string, string>> {
+function toObjectRecord(value: unknown, sourceDescription: string): Record<string, unknown> {
+	if (!isRecord(value)) {
+		throw new Error(`${sourceDescription} must export an object`)
+	}
+
+	return value
+}
+
+async function loadFromTsModule(filePath: string, exportName: string): Promise<unknown> {
 	const moduleUrl = `${pathToFileURL(filePath).href}?t=${Date.now()}`
 	const module = (await import(moduleUrl)) as Record<string, unknown>
 
@@ -34,15 +42,14 @@ async function loadFromTsModule(filePath: string, exportName: string): Promise<R
 			`${filePath} must export ${exportName} (or config) to provide package-config values`
 		)
 	}
-
-	return toStringRecord(exportedValue, filePath)
+	return exportedValue
 }
 
-export async function tryLoadNamedStringRecordConfig(
+export async function tryLoadNamedObjectConfig(
 	baseDirectory: string,
 	baseName: string,
 	exportName: string
-): Promise<Record<string, string> | undefined> {
+): Promise<Record<string, unknown> | undefined> {
 	const tsFilePath = join(baseDirectory, `${baseName}.ts`)
 	const tsSource = await readTextFileIfExists(tsFilePath)
 	if (tsSource !== undefined) {
@@ -50,7 +57,8 @@ export async function tryLoadNamedStringRecordConfig(
 			return {}
 		}
 
-		return loadFromTsModule(tsFilePath, exportName)
+		const loaded = await loadFromTsModule(tsFilePath, exportName)
+		return toObjectRecord(loaded, tsFilePath)
 	}
 
 	const jsonFilePath = join(baseDirectory, `${baseName}.json`)
@@ -60,7 +68,20 @@ export async function tryLoadNamedStringRecordConfig(
 			return {}
 		}
 
-		return toStringRecord(parseJson(jsonSource, jsonFilePath), jsonFilePath)
+		return toObjectRecord(parseJson(jsonSource, jsonFilePath), jsonFilePath)
+	}
+
+	return undefined
+}
+
+export async function tryLoadNamedStringRecordConfig(
+	baseDirectory: string,
+	baseName: string,
+	exportName: string
+): Promise<Record<string, string> | undefined> {
+	const loaded = await tryLoadNamedObjectConfig(baseDirectory, baseName, exportName)
+	if (loaded !== undefined) {
+		return toStringRecord(loaded, join(baseDirectory, baseName))
 	}
 
 	return undefined

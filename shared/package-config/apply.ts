@@ -64,6 +64,13 @@ export const applyCommand = define({
 			type: 'boolean',
 			short: 'r',
 			description: 'Apply to every package.json project recursively from current project root'
+		},
+		tsconfigProfile: {
+			type: 'enum',
+			choices: ['base', 'cdk8s'],
+			default: 'base',
+			toKebab: true,
+			description: 'Profile for tsconfig apply behavior'
 		}
 	},
 	run: async ctx => {

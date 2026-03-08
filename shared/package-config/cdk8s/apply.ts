@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { loadNamedStringRecordConfig, tryLoadNamedStringRecordConfig } from '../internal/config-source.ts'
+import { tryLoadNamedStringRecordConfig } from '../internal/config-source.ts'
 import { applyPackageJsonSections } from '../internal/package-json-sections.ts'
 
 import type { ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'

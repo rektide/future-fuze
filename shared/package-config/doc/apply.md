@@ -49,13 +49,14 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    a. auto-detect `pnpm` or `npm` and use detected tool for installs
    a. if `--update` is set, install `@future-fuze/package-config@latest`
 1. create `package-config/typescript/apply.ts`
-   a. apply shared `@future-fuze/package-config/typescript/base.json` to target project
-   a. apply shared `typescript/devDependencies.json` and `typescript/scripts.json` into target `package.json`
+   a. keep leaf-first default: leaf `tsconfig.json` should extend package-config directly
+   a. add optional tsconfig source files (`typescript/tsconfig.json` and `typescript/recursive/tsconfig.json`)
+   a. use `typescript/recursive/tsconfig.*` only for monorepo root targets; leaf targets ignore it
+   a. support tsconfig profile selection (for example `base` and `cdk8s`)
+   a. continue applying shared `typescript/devDependencies.json` and `typescript/scripts.json` into target `package.json`
    a. support `.ts` source alternatives (`devDependencies.ts` / `scripts.ts`) with named export (`devDependencies` / `scripts`) or `config`
-   a. if `typescript/recursive/` sources exist and target is a monorepo root, use those instead of base sources for root-level apply
-   a. if target is a leaf package, ignore `typescript/recursive/` sources
-   a. honor `--conflict` behavior when target `tsconfig.json` already has incompatible settings
-   a. honor `--dry-run` with clear output of planned changes
+   a. preserve unrelated tsconfig keys and apply conflict policy field-by-field (`extends`, `include`, `exclude`, `compilerOptions`)
+   a. honor `--dry-run` with clear output of planned tsconfig and package.json changes
 1. create `package-config/prettier/apply.ts`
    a. apply shared `@future-fuze/package-config/prettier` configuration to target project
    a. honor `--conflict` behavior when existing prettier config differs
@@ -85,6 +86,7 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
 ## future tasks
 
 - add a doctor/check mode to report drift without modifying files
+- add tsconfig doctor/check rules (missing/incorrect `extends`, profile drift, source mismatch)
 
 ## notes
 

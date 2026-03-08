@@ -55,6 +55,7 @@ Use the apply tool to configure the current project in-place:
 
 ```sh
 node ./node_modules/@future-fuze/package-config/index.ts apply --config tsconfig
+node ./node_modules/@future-fuze/package-config/index.ts apply --config tsconfig --tsconfig-profile cdk8s
 node ./node_modules/@future-fuze/package-config/index.ts apply --config prettier
 node ./node_modules/@future-fuze/package-config/index.ts apply --config concurrently
 node ./node_modules/@future-fuze/package-config/index.ts apply --config cdk8s
@@ -69,6 +70,7 @@ node ./node_modules/@future-fuze/package-config/apply.ts --config prettier
 
 - `--config <name>`: config to apply (`tsconfig`, `prettier`, `concurrently`, `cdk8s`, `all`); repeat to apply multiple configs
 - `--recursive`, `-r`: apply to each discovered package project under current project root
+- `--tsconfig-profile <profile>`: tsconfig profile (`base` default, `cdk8s`) when applying `tsconfig`
 - `--dry-run`: print planned install/file changes without writing
 - `--update`: install `@future-fuze/package-config@latest` as a dev dependency
 - `--conflict <mode>`: conflict handling strategy
@@ -83,6 +85,7 @@ not mixed nested structures:
 
 - `typescript/devDependencies.json` or `typescript/devDependencies.ts`
 - `typescript/scripts.json` or `typescript/scripts.ts`
+- `typescript/tsconfig.json` or `typescript/tsconfig.ts`
 - `concurrently/devDependencies.json` or `concurrently/devDependencies.ts`
 - `concurrently/scripts.json` or `concurrently/scripts.ts`
 - `cdk8s/devDependencies.json` or `cdk8s/devDependencies.ts`
@@ -93,6 +96,7 @@ for configs that support package section updates:
 
 - `typescript/recursive/devDependencies.json` or `.ts`
 - `typescript/recursive/scripts.json` or `.ts`
+- `typescript/recursive/tsconfig.json` or `.ts`
 - `concurrently/recursive/devDependencies.json` or `.ts`
 - `concurrently/recursive/scripts.json` or `.ts`
 - `cdk8s/recursive/devDependencies.json` or `.ts`

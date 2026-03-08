@@ -263,6 +263,43 @@ afterEach(async () => {
 		expect(leafPackageJsonAfter.scripts['build:cdk8s']).toBe('cdk8s synth')
 	})
 
+	test('uses recursive tsconfig source at monorepo root only', async () => {
+		const projectPath = await createFixtureProject('npm-workspace')
+		const result = await runApply(
+			['--config', 'tsconfig', '--recursive', '--conflict', 'overwrite'],
+			projectPath
+		)
+
+		expect(result.code).toBe(0)
+
+		const rootTsconfig = JSON.parse(await readFile(join(projectPath, 'tsconfig.json'), 'utf8')) as {
+			extends: string
+			include: string[]
+		}
+		expect(rootTsconfig.extends).toBe('@future-fuze/package-config/typescript/base.json')
+		expect(rootTsconfig.include).toEqual(['packages/*/src/**/*.ts'])
+
+		const leafTsconfig = JSON.parse(
+			await readFile(join(projectPath, 'packages', 'a', 'tsconfig.json'), 'utf8')
+		) as { extends: string; include: string[] }
+		expect(leafTsconfig.extends).toBe('@future-fuze/package-config/typescript/base.json')
+		expect(leafTsconfig.include).toEqual(['src/**/*.ts'])
+	})
+
+	test('supports cdk8s tsconfig profile', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const result = await runApply(
+			['--config', 'tsconfig', '--tsconfig-profile', 'cdk8s', '--conflict', 'overwrite'],
+			projectPath
+		)
+
+		expect(result.code).toBe(0)
+		const tsconfig = JSON.parse(await readFile(join(projectPath, 'tsconfig.json'), 'utf8')) as {
+			extends: string
+		}
+		expect(tsconfig.extends).toBe('@future-fuze/package-config/typescript/cdk8s.json')
+	})
+
 		test('uses package metadata before lockfiles', async () => {
 			const projectPath = await createFixtureProject('pnpm-project')
 			const result = await runApply(['--config', 'tsconfig', '--dry-run'], projectPath)

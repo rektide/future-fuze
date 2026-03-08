@@ -4,6 +4,7 @@ export type PackageManager = 'pnpm' | 'npm'
 export type MonorepoManager = 'pnpm' | 'npm'
 
 export type ConflictMode = 'error' | 'overwrite' | 'skip'
+export type TsconfigProfile = 'base' | 'cdk8s'
 
 export interface PackageJsonData {
 	name?: string
@@ -29,4 +30,5 @@ export interface ApplyRuntimeOptions {
 	update: boolean
 	dryRun: boolean
 	conflict: ConflictMode
+	tsconfigProfile: TsconfigProfile
 }
