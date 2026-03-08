@@ -1,0 +1,2 @@
+app: ts-node index.ts
+language: typescript
