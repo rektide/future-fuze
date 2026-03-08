@@ -1,2 +1,2 @@
-app: ts-node index.ts
+app: node --experimental-strip-types index.ts
 language: typescript
