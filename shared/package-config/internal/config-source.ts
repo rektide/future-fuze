@@ -46,12 +46,20 @@ export async function tryLoadNamedStringRecordConfig(
 	const tsFilePath = join(baseDirectory, `${baseName}.ts`)
 	const tsSource = await readTextFileIfExists(tsFilePath)
 	if (tsSource !== undefined) {
+		if (tsSource.trim() === '') {
+			return {}
+		}
+
 		return loadFromTsModule(tsFilePath, exportName)
 	}
 
 	const jsonFilePath = join(baseDirectory, `${baseName}.json`)
 	const jsonSource = await readTextFileIfExists(jsonFilePath)
 	if (jsonSource !== undefined) {
+		if (jsonSource.trim() === '') {
+			return {}
+		}
+
 		return toStringRecord(parseJson(jsonSource, jsonFilePath), jsonFilePath)
 	}
 

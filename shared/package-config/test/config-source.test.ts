@@ -63,4 +63,20 @@ describe('loadNamedStringRecordConfig', () => {
 		const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
 		expect(loaded).toEqual({ 'checkbuild:tsgo': 'from-ts' })
 	})
+
+	test('treats empty JSON config source as no-op', async () => {
+		const directoryPath = await createTempDirectory()
+		await writeFile(join(directoryPath, 'scripts.json'), '', 'utf8')
+
+		const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
+		expect(loaded).toEqual({})
+	})
+
+	test('treats empty TypeScript config source as no-op', async () => {
+		const directoryPath = await createTempDirectory()
+		await writeFile(join(directoryPath, 'scripts.ts'), '', 'utf8')
+
+		const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
+		expect(loaded).toEqual({})
+	})
 })

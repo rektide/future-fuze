@@ -98,6 +98,10 @@ function applyStringRecordSection(
 	options: ApplyRuntimeOptions,
 	packageJsonPath: string
 ): boolean {
+	if (Object.keys(targetValues).length === 0) {
+		return false
+	}
+
 	const existingSection = packageJson[sectionName]
 	let mutableSection: Record<string, unknown>
 	let changed = false

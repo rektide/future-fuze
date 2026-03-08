@@ -79,3 +79,4 @@ When using `.ts` files, export either the named key (`devDependencies` / `script
 
 When applying from a monorepo root (detected via `pnpm-workspace.yaml` or npm `workspaces`),
 `typescript/recursive/*` is used when present. Leaf packages continue using non-recursive files.
+An empty recursive source file is treated as a no-op for that section.
