@@ -1,6 +1,7 @@
 export const packageConfigPackageName = '@future-fuze/package-config'
 
 export type PackageManager = 'pnpm' | 'npm'
+export type MonorepoManager = 'pnpm' | 'npm'
 
 export type ConflictMode = 'error' | 'overwrite' | 'skip'
 
@@ -20,6 +21,8 @@ export interface ProjectContext {
 	packageJsonPath: string
 	packageJson: PackageJsonData
 	packageManager: PackageManager
+	isMonorepoRoot: boolean
+	monorepoManager?: MonorepoManager
 }
 
 export interface ApplyRuntimeOptions {

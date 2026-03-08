@@ -1,7 +1,12 @@
 import { access, readFile, realpath } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 
-import type { PackageJsonData, PackageManager, ProjectContext } from './types.ts'
+import type {
+	MonorepoManager,
+	PackageJsonData,
+	PackageManager,
+	ProjectContext
+} from './types.ts'
 
 async function exists(filePath: string): Promise<boolean> {
 	try {
@@ -26,6 +31,43 @@ function parsePackageManagerFromMetadata(value: unknown): PackageManager | undef
 	}
 
 	return undefined
+}
+
+function hasNpmWorkspaces(packageJson: PackageJsonData): boolean {
+	const workspaces = packageJson.workspaces
+	if (Array.isArray(workspaces)) {
+		return workspaces.every(entry => typeof entry === 'string')
+	}
+
+	if (typeof workspaces === 'object' && workspaces !== null) {
+		const packages = (workspaces as Record<string, unknown>).packages
+		return Array.isArray(packages) && packages.every(entry => typeof entry === 'string')
+	}
+
+	return false
+}
+
+async function detectMonorepo(
+	projectRoot: string,
+	packageJson: PackageJsonData
+): Promise<{ isMonorepoRoot: boolean; monorepoManager?: MonorepoManager }> {
+	if (await exists(join(projectRoot, 'pnpm-workspace.yaml'))) {
+		return {
+			isMonorepoRoot: true,
+			monorepoManager: 'pnpm'
+		}
+	}
+
+	if (hasNpmWorkspaces(packageJson)) {
+		return {
+			isMonorepoRoot: true,
+			monorepoManager: 'npm'
+		}
+	}
+
+	return {
+		isMonorepoRoot: false
+	}
 }
 
 export async function findProjectRoot(startDirectory = process.cwd()): Promise<string> {
@@ -82,12 +124,15 @@ export async function loadProjectContext(
 	const packageJsonText = await readFile(packageJsonPath, 'utf8')
 	const packageJson = JSON.parse(packageJsonText) as PackageJsonData
 	const packageManager = await detectPackageManager(projectRoot, packageJson, fallbackPackageManager)
+	const monorepo = await detectMonorepo(projectRoot, packageJson)
 
 	return {
 		cwd,
 		projectRoot,
 		packageJsonPath,
 		packageJson,
-		packageManager
+		packageManager,
+		isMonorepoRoot: monorepo.isMonorepoRoot,
+		monorepoManager: monorepo.monorepoManager
 	}
 }

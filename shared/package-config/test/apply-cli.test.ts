@@ -132,6 +132,78 @@ afterEach(async () => {
 		expect(installMatches?.length).toBe(3)
 	})
 
+	test('uses recursive scripts source at monorepo root only', async () => {
+		const projectPath = await createFixtureProject('npm-workspace')
+		const rootPackageJsonPath = join(projectPath, 'package.json')
+		const leafAPackageJsonPath = join(projectPath, 'packages', 'a', 'package.json')
+		const leafBPackageJsonPath = join(projectPath, 'packages', 'b', 'package.json')
+
+		await writeFile(
+			rootPackageJsonPath,
+			JSON.stringify(
+				{
+					name: 'fixture-npm-workspace',
+					version: '1.0.0',
+					private: true,
+					workspaces: ['packages/*'],
+					devDependencies: {
+						'@future-fuze/package-config': '*',
+						'@typescript/native-preview': '*'
+					},
+					scripts: {
+						'checkbuild:tsgo': 'old-root-script'
+					}
+				},
+				null,
+				2
+			),
+			'utf8'
+		)
+
+		for (const leafPath of [leafAPackageJsonPath, leafBPackageJsonPath]) {
+			const packageJson = JSON.parse(await readFile(leafPath, 'utf8')) as Record<string, unknown>
+			await writeFile(
+				leafPath,
+				JSON.stringify(
+					{
+						...packageJson,
+						devDependencies: {
+							'@future-fuze/package-config': '*',
+							'@typescript/native-preview': '*'
+						},
+						scripts: {
+							'checkbuild:tsgo': 'old-leaf-script'
+						}
+					},
+					null,
+					2
+				),
+				'utf8'
+			)
+		}
+
+		const result = await runApply(
+			['--config', 'tsconfig', '--recursive', '--conflict', 'overwrite'],
+			projectPath
+		)
+
+		expect(result.code).toBe(0)
+
+		const rootPackageJson = JSON.parse(await readFile(rootPackageJsonPath, 'utf8')) as {
+			scripts: Record<string, string>
+		}
+		expect(rootPackageJson.scripts['checkbuild:tsgo']).toBe('pnpm -r run checkbuild:tsgo')
+
+		const leafAPackageJson = JSON.parse(await readFile(leafAPackageJsonPath, 'utf8')) as {
+			scripts: Record<string, string>
+		}
+		const leafBPackageJson = JSON.parse(await readFile(leafBPackageJsonPath, 'utf8')) as {
+			scripts: Record<string, string>
+		}
+		expect(leafAPackageJson.scripts['checkbuild:tsgo']).toBe('tsgo')
+		expect(leafBPackageJson.scripts['checkbuild:tsgo']).toBe('tsgo')
+	})
+
 		test('uses package metadata before lockfiles', async () => {
 			const projectPath = await createFixtureProject('pnpm-project')
 			const result = await runApply(['--config', 'tsconfig', '--dry-run'], projectPath)
@@ -158,6 +230,74 @@ afterEach(async () => {
 })
 
 describe('apply CLI conflict handling', () => {
+	test('applies typescript package.json scripts and devDependencies', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const packageJsonPath = join(projectPath, 'package.json')
+		await writeFile(
+			packageJsonPath,
+			JSON.stringify(
+				{
+					name: 'fixture-npm-project',
+					version: '1.0.0',
+					private: true,
+					devDependencies: {
+						'@future-fuze/package-config': '*',
+						'@typescript/native-preview': '0.0.1'
+					},
+					scripts: {
+						'checkbuild:tsgo': 'old-command'
+					}
+				},
+				null,
+				2
+			),
+			'utf8'
+		)
+
+		const result = await runApply(['--config', 'tsconfig', '--conflict', 'overwrite'], projectPath)
+
+		expect(result.code).toBe(0)
+		const saved = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
+			devDependencies: Record<string, string>
+			scripts: Record<string, string>
+		}
+		expect(saved.devDependencies['@typescript/native-preview']).toBe('*')
+		expect(saved.scripts['checkbuild:tsgo']).toBe('tsgo')
+	})
+
+	test('respects skip conflict mode for package.json script updates', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const packageJsonPath = join(projectPath, 'package.json')
+		await writeFile(
+			packageJsonPath,
+			JSON.stringify(
+				{
+					name: 'fixture-npm-project',
+					version: '1.0.0',
+					private: true,
+					devDependencies: {
+						'@future-fuze/package-config': '*',
+						'@typescript/native-preview': '*'
+					},
+					scripts: {
+						'checkbuild:tsgo': 'old-command'
+					}
+				},
+				null,
+				2
+			),
+			'utf8'
+		)
+
+		const result = await runApply(['--config', 'tsconfig', '--conflict', 'skip'], projectPath)
+
+		expect(result.code).toBe(0)
+		const saved = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
+			scripts: Record<string, string>
+		}
+		expect(saved.scripts['checkbuild:tsgo']).toBe('old-command')
+	})
+
 	test('fails on tsconfig conflict by default', async () => {
 		const projectPath = await createFixtureProject('npm-project')
 		await writeFile(

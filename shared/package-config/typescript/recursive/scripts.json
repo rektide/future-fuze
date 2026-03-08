@@ -1,0 +1,3 @@
+{
+	"checkbuild:tsgo": "pnpm -r run checkbuild:tsgo"
+}

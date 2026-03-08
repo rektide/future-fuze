@@ -20,6 +20,7 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
 1. `package-config/internal/project.ts`
    - detect project root and load target `package.json`
    - detect package manager (`pnpm` vs `npm`) from package metadata first, then lockfiles
+   - detect monorepo root status from `pnpm-workspace.yaml` or npm `workspaces`
    - defer environment-based detection for now
    - leave explicit TODO comments in code where env detection should be added later
 1. `package-config/internal/install.ts`
@@ -49,6 +50,10 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    a. if `--update` is set, install `@future-fuze/package-config@latest`
 1. create `package-config/typescript/apply.ts`
    a. apply shared `@future-fuze/package-config/typescript/base.json` to target project
+   a. apply shared `typescript/devDependencies.json` and `typescript/scripts.json` into target `package.json`
+   a. support `.ts` source alternatives (`devDependencies.ts` / `scripts.ts`) with named export (`devDependencies` / `scripts`) or `config`
+   a. if `typescript/recursive/` sources exist and target is a monorepo root, use those instead of base sources for root-level apply
+   a. if target is a leaf package, ignore `typescript/recursive/` sources
    a. honor `--conflict` behavior when target `tsconfig.json` already has incompatible settings
    a. honor `--dry-run` with clear output of planned changes
 1. create `package-config/prettier/apply.ts`
