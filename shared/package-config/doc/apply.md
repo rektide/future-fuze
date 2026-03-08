@@ -2,22 +2,66 @@
 
 we are creating an `apply` meta-tool for package-config to make it easier to apply the various package-configs. this repo is typically broken down by the tool being configured. example: typescript in typescript/.
 
+## locked decisions
+
+- install `@future-fuze/package-config` as a `devDependency`
+- ship only `.ts` source files
+- run with Node type stripping (no build output for runtime)
+- use `tsgo` for type checking
+- cross-cutting CLI flags are implemented as gunshi plugins
+- `jj commit` after each step, big or small
+
+## internal framework (build before feature-specific apply files)
+
+1. `package-config/apply.ts`
+   - CLI entrypoint for the apply meta-tool
+   - register gunshi plugins and subcommands
+1. `package-config/internal/project.ts`
+   - detect project root and load target `package.json`
+   - detect package manager (`pnpm` vs `npm`) from environment/package metadata/lockfiles
+1. `package-config/internal/install.ts`
+   - ensure `@future-fuze/package-config` is installed in `devDependencies`
+   - install latest when `--update` is enabled
+1. `package-config/internal/files.ts`
+   - JSON/text read+write helpers with dry-run support
+1. `package-config/internal/conflict.ts`
+   - shared conflict-resolution strategy used by apply operations
+1. `package-config/gunshi/update.ts`
+   - plugin that adds `--update`
+1. `package-config/gunshi/dry-run.ts`
+   - plugin that adds `--dry-run`
+1. `package-config/gunshi/conflict.ts`
+   - plugin that adds `--conflict`
+
 ## tasks
 
-1. first task is package-config/apply.ts. we want to build this in small steps.
-   a. create. checks if the @future-fuze/package-config package is installed for project in $CWD and installs if not
-   a. auto-determine if the invoking tool is npm or pnpm and switch to whichever tool for the package install
-   a. add gunshi package dependency and commit
-   a. create a gunshi/update.ts gunshi plugin, that captures an --update flag. if set, package configs that install packages should also check to see if package is latest version or not & install latest if not.
-   a. implement global/update.ts for existing package configs
-1. create an typescript/apply.ts file apply the shared/package-config/typescript file to a project.
-1. create a prettier/apply.ts
+1. create `package-config/apply.ts` in small steps
+   a. add `gunshi` dependency
+   a. wire `gunshi/update.ts`, `gunshi/dry-run.ts`, and `gunshi/conflict.ts`
+   a. ensure `@future-fuze/package-config` is installed in `devDependencies` when missing
+   a. auto-detect `pnpm` or `npm` and use detected tool for installs
+   a. if `--update` is set, install `@future-fuze/package-config@latest`
+1. create `package-config/tsconfig/apply.ts`
+   a. apply shared `@future-fuze/package-config/tsconfig/base.json` to target project
+   a. honor `--conflict` behavior when target `tsconfig.json` already has incompatible settings
+   a. honor `--dry-run` with clear output of planned changes
+1. create `package-config/prettier/apply.ts`
+   a. apply shared `@future-fuze/package-config/prettier` configuration to target project
+   a. honor `--conflict` behavior when existing prettier config differs
+   a. honor `--dry-run` with clear output of planned changes
+1. add tests
+   a. fixture tests for npm and pnpm projects
+   a. tests for `--update`, `--dry-run`, and `--conflict`
+1. update docs
+   a. usage examples for `apply tsconfig` and `apply prettier`
+   a. document conflict modes and dry-run behavior
 
 ## future tasks
 
 - add batch apply to apply multiple package configs at once
 - add recursive apply to apply recursively to packages
+- add a doctor/check mode to report drift without modifying files
 
 ## notes
 
-jj commit after each step, big or small!
+keep each task idempotent. running the same apply command repeatedly should produce no-op results when already up-to-date.
