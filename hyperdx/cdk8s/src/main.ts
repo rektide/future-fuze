@@ -1,14 +1,13 @@
-import { App as Cdk8sApp } from 'cdk8s';
-import { Construct } from 'constructs';
-import { defaultConfig, type HyperDXConfig } from './config.js';
-import { Namespace } from './namespace.js';
-import { Database } from './db.js';
-import { ClickHouse } from './ch-server.js';
-import { OtelCollector } from './otel-collector.js';
-import { App } from './app.js';
+import { App as Cdk8sApp, Chart } from 'cdk8s';
+import { defaultConfig, type HyperDXConfig } from './config';
+import { Namespace } from './namespace';
+import { Database } from './db';
+import { ClickHouse } from './ch-server';
+import { OtelCollector } from './otel-collector';
+import { App } from './app';
 
-export class HyperDXStack extends Construct {
-  constructor(scope: Construct, id: string, config: HyperDXConfig = defaultConfig) {
+export class HyperDXStack extends Chart {
+  constructor(scope: Cdk8sApp, id: string, config: HyperDXConfig = defaultConfig) {
     super(scope, id);
     
     new Namespace(this, 'namespace', { name: config.namespace });

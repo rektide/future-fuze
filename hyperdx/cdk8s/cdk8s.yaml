@@ -2,4 +2,4 @@ language: typescript
 app: node dist/main.js
 imports:
   - k8s
-output: dist
+output: dist/manifests

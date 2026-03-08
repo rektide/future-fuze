@@ -1,21 +1,21 @@
-import { Construct } from 'constructs';
-import { Chart, ChartProps, ApiObject } from 'cdk8s';
-import * as kplus from 'cdk8s-plus-28';
+import { Construct } from "constructs";
+import { ApiObject, Chart, ChartProps, Size } from "cdk8s";
+import * as kplus from "cdk8s-plus-33";
 
 export interface ClickHouseProps extends ChartProps {
-  readonly namespace: string;
-  readonly image: string;
-  readonly httpPort: number;
-  readonly nativePort: number;
-  readonly dataStorageSize: string;
-  readonly logsStorageSize: string;
+    readonly namespace: string;
+    readonly image: string;
+    readonly httpPort: number;
+    readonly nativePort: number;
+    readonly dataStorageSize: string;
+    readonly logsStorageSize: string;
 }
 
 export class ClickHouse extends Chart {
-  constructor(scope: Construct, id: string, props: ClickHouseProps) {
-    super(scope, id, props);
-    
-    const configXml = `<?xml version="1.0"?>
+    constructor(scope: Construct, id: string, props: ClickHouseProps) {
+        super(scope, id, props);
+
+        const configXml = `<?xml version="1.0"?>
 <clickhouse>
     <logger>
         <level>debug</level>
@@ -132,7 +132,7 @@ export class ClickHouse extends Chart {
     <custom_settings_prefixes>hyperdx</custom_settings_prefixes>
 </clickhouse>`;
 
-    const usersXml = `<?xml version="1.0"?>
+        const usersXml = `<?xml version="1.0"?>
 <clickhouse>
     <profiles>
         <default>
@@ -182,83 +182,100 @@ export class ClickHouse extends Chart {
     </quotas>
 </clickhouse>`;
 
-    const configMap = new kplus.ConfigMap(this, 'config', {
-      metadata: {
-        name: 'ch-server-config',
-        namespace: props.namespace,
-      },
-      data: {
-        'config.xml': configXml,
-        'users.xml': usersXml,
-      },
-    });
+        const configMap = new kplus.ConfigMap(this, "config", {
+            metadata: {
+                name: "ch-server-config",
+                namespace: props.namespace,
+            },
+            data: {
+                "config.xml": configXml,
+                "users.xml": usersXml,
+            },
+        });
 
-    const dataPvc = new kplus.PersistentVolumeClaim(this, 'data-pvc', {
-      storage: kplus.Size.gibibytes(parseInt(props.dataStorageSize)),
-      accessModes: [kplus.PersistentVolumeAccessMode.READ_WRITE_ONCE],
-      metadata: {
-        name: 'ch-data',
-        namespace: props.namespace,
-      },
-    });
+        const dataPvc = new kplus.PersistentVolumeClaim(this, "data-pvc", {
+            storage: Size.gibibytes(parseInt(props.dataStorageSize)),
+            accessModes: [kplus.PersistentVolumeAccessMode.READ_WRITE_ONCE],
+            metadata: {
+                name: "ch-data",
+                namespace: props.namespace,
+            },
+        });
 
-    const logsPvc = new kplus.PersistentVolumeClaim(this, 'logs-pvc', {
-      storage: kplus.Size.gibibytes(parseInt(props.logsStorageSize)),
-      accessModes: [kplus.PersistentVolumeAccessMode.READ_WRITE_ONCE],
-      metadata: {
-        name: 'ch-logs',
-        namespace: props.namespace,
-      },
-    });
+        const logsPvc = new kplus.PersistentVolumeClaim(this, "logs-pvc", {
+            storage: Size.gibibytes(parseInt(props.logsStorageSize)),
+            accessModes: [kplus.PersistentVolumeAccessMode.READ_WRITE_ONCE],
+            metadata: {
+                name: "ch-logs",
+                namespace: props.namespace,
+            },
+        });
 
-    const deployment = new kplus.Deployment(this, 'deployment', {
-      metadata: {
-        name: 'ch-server',
-        namespace: props.namespace,
-      },
-      replicas: 1,
-      containers: [
-        {
-          name: 'ch-server',
-          image: kplus.ContainerImage.fromRegistry(props.image),
-          ports: [
-            { containerPort: props.httpPort, name: 'http' },
-            { containerPort: props.nativePort, name: 'native' },
-          ],
-          envVariables: {
-            CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: kplus.EnvValue.fromValue('1'),
-          },
-          securityContext: {
-            ensureNonRoot: false,
-            readOnlyRootFilesystem: false,
-          },
-        },
-      ],
-    });
+        const deployment = new kplus.Deployment(this, "deployment", {
+            metadata: {
+                name: "ch-server",
+                namespace: props.namespace,
+            },
+            replicas: 1,
+        });
 
-    const configVolume = kplus.Volume.fromConfigMap(this, 'config-volume', configMap);
-    deployment.addContainer({
-      name: 'ch-server',
-      image: kplus.ContainerImage.fromRegistry(props.image),
-    });
+        const container = deployment.addContainer({
+            name: "ch-server",
+            image: props.image,
+            ports: [
+                { number: props.httpPort, name: "http" },
+                { number: props.nativePort, name: "native" },
+            ],
+            envVariables: {
+                CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: kplus.EnvValue
+                    .fromValue("1"),
+            },
+            securityContext: {
+                ensureNonRoot: false,
+                readOnlyRootFilesystem: false,
+            },
+        });
 
-    const container = deployment.spec.template.spec.containers[0];
-    container.mount('/etc/clickhouse-server/config.xml', { volume: configVolume, subPath: 'config.xml' });
-    container.mount('/etc/clickhouse-server/users.xml', { volume: configVolume, subPath: 'users.xml' });
-    container.mount('/var/lib/clickhouse', { volume: kplus.Volume.fromPersistentVolumeClaim(dataPvc) });
-    container.mount('/var/log/clickhouse-server', { volume: kplus.Volume.fromPersistentVolumeClaim(logsPvc) });
+        const configVolume = kplus.Volume.fromConfigMap(
+            this,
+            "config-volume",
+            configMap,
+        );
 
-    new kplus.Service(this, 'service', {
-      metadata: {
-        name: 'ch-server',
-        namespace: props.namespace,
-      },
-      type: kplus.ServiceType.CLUSTER_IP,
-      selector: deployment,
-      ports: [
-        { name: 'http', port: props.httpPort, targetPort: props.httpPort },
-        { name: 'native', port: props.nativePort, targetPort: props.nativePort },
-      ],
-    });
-  }
+        container.mount("/etc/clickhouse-server/config.xml", configVolume, {
+            subPath: "config.xml",
+        });
+        container.mount("/etc/clickhouse-server/users.xml", configVolume, {
+            subPath: "users.xml",
+        });
+        container.mount(
+            "/var/lib/clickhouse",
+            kplus.Volume.fromPersistentVolumeClaim(this, "data-volume", dataPvc),
+        );
+        container.mount(
+            "/var/log/clickhouse-server",
+            kplus.Volume.fromPersistentVolumeClaim(this, "logs-volume", logsPvc),
+        );
+
+        new kplus.Service(this, "service", {
+            metadata: {
+                name: "ch-server",
+                namespace: props.namespace,
+            },
+            type: kplus.ServiceType.CLUSTER_IP,
+            selector: deployment,
+            ports: [
+                {
+                    name: "http",
+                    port: props.httpPort,
+                    targetPort: props.httpPort,
+                },
+                {
+                    name: "native",
+                    port: props.nativePort,
+                    targetPort: props.nativePort,
+                },
+            ],
+        });
+    }
 }

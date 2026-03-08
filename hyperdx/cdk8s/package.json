@@ -1,20 +1,19 @@
 {
-  "name": "hyperdx-cdk8s",
-  "version": "0.1.0",
-  "type": "module",
-  "scripts": {
-    "synth": "cdk8s synth",
-    "build": "tsc",
-    "watch": "tsc -w"
-  },
-  "dependencies": {
-    "cdk8s": "^2.68.0",
-    "cdk8s-plus-28": "^2.68.0",
-    "constructs": "^10.3.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.0",
-    "cdk8s-cli": "^2.68.0",
-    "typescript": "^5.3.0"
-  }
+	"name": "hyperdx-cdk8s",
+	"version": "0.1.0",
+	"scripts": {
+		"synth": "cdk8s synth",
+		"build": "tsc",
+		"watch": "tsc -w"
+	},
+	"dependencies": {
+		"cdk8s": "^2.70.49",
+		"cdk8s-plus-33": "^2.4.32",
+		"constructs": "^10.5.1"
+	},
+	"devDependencies": {
+		"@types/node": "^25.3.2",
+		"cdk8s-cli": "^2.204.9",
+		"typescript": "^5.9.3"
+	}
 }
