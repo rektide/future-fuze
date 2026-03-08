@@ -1,0 +1,15 @@
+{
+	"name": "@future-fuze/package-config",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./tsconfig/base.json": "./tsconfig/base.json",
+		"./tsconfig/cdk8s.json": "./tsconfig/cdk8s.json",
+		"./prettier.json": "./prettier/index.json"
+	},
+	"files": [
+		"tsconfig",
+		"prettier"
+	]
+}

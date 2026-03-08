@@ -1,4 +1,4 @@
-# @future-fuze/config
+# @future-fuze/package-config
 
 Shared configuration for future-fuze projects.
 
@@ -10,8 +10,8 @@ Extend the base config in your `tsconfig.json`:
 
 ```json
 {
-  "extends": "@future-fuze/config/tsconfig/base.json",
-  "include": ["src/**/*.ts"]
+	"extends": "@future-fuze/package-config/tsconfig/base.json",
+	"include": ["src/**/*.ts"]
 }
 ```
 
@@ -19,8 +19,8 @@ For CDK8S projects (enables decorators):
 
 ```json
 {
-  "extends": "@future-fuze/config/tsconfig/cdk8s.json",
-  "include": ["src/**/*.ts"]
+	"extends": "@future-fuze/package-config/tsconfig/cdk8s.json",
+	"include": ["src/**/*.ts"]
 }
 ```
 
@@ -30,7 +30,7 @@ Reference in your `package.json`:
 
 ```json
 {
-  "prettier": "@future-fuze/config/prettier"
+	"prettier": "@future-fuze/package-config/prettier"
 }
 ```
 

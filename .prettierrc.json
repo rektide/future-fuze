@@ -1,5 +1,5 @@
 {
-  "useTabs": true,
-  "semi": false,
-  "max_line_length": 2047
+	"useTabs": true,
+	"semi": false,
+	"max_line_length": 2047
 }
