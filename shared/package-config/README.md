@@ -37,5 +37,5 @@ Reference in your `package.json`:
 Or create `.prettierrc.json`:
 
 ```json
-"@future-fuze/config/prettier"
+"@future-fuze/package-config/prettier"
 ```

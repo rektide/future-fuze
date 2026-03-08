@@ -4,8 +4,8 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
 
 ## tasks
 
-1. first task is a packgage/apply.json. we want to build this in small steps.
-   a. create. checks if the @future-fuze/config package is installed for project in $CWD and installs if not
+1. first task is package-config/apply.json. we want to build this in small steps.
+   a. create. checks if the @future-fuze/package-config package is installed for project in $CWD and installs if not
    a. auto-determine if the invoking tool is npm or pnpm and switch to whichever tool for the package install
    a. add gunshi package dependency and commit
    a. create a gunshi/update.ts gunshi plugin, that captures an --update flag. if set, package configs that install packages should also check to see if package is latest version or not & install latest if not.
