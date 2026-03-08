@@ -18,7 +18,9 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    - register gunshi plugins and subcommands
 1. `package-config/internal/project.ts`
    - detect project root and load target `package.json`
-   - detect package manager (`pnpm` vs `npm`) from environment/package metadata/lockfiles
+   - detect package manager (`pnpm` vs `npm`) from package metadata first, then lockfiles
+   - defer environment-based detection for now
+   - leave explicit TODO comments in code where env detection should be added later
 1. `package-config/internal/install.ts`
    - ensure `@future-fuze/package-config` is installed in `devDependencies`
    - install latest when `--update` is enabled
