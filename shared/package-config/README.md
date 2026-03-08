@@ -2,6 +2,15 @@
 
 Shared configuration for future-fuze projects.
 
+## Policy: Leaf-first portability
+
+Even in a monorepo, package configs in this project are designed so a single package folder
+can run on its own without requiring parent/root config files.
+
+- Base config files are the default for package-level apply behavior.
+- `recursive/` config sources are optional root overrides for monorepo root usage only.
+- Leaf packages must remain executable and valid when copied out of the monorepo.
+
 ## Usage
 
 ### TypeScript
