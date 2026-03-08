@@ -7,7 +7,7 @@
 		"package-config-apply": "./apply.ts"
 	},
 	"scripts": {
-		"checkbuild:tsgo": "tsgo",
+		"check:tsgo": "tsgo",
 		"test": "vitest run"
 	},
 	"publishConfig": {
