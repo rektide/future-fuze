@@ -16,8 +16,9 @@ import { parseApplyRuntimeOptions } from './internal/options.ts'
 import { loadProjectContext } from './internal/project.ts'
 import { applyPrettierConfig } from './prettier/apply.ts'
 import { applyTypescriptConfig } from './typescript/apply.ts'
+import { applyVitestConfig } from './vitest/apply.ts'
 
-const applyTargetChoices = ['tsconfig', 'prettier', 'concurrently', 'cdk8s'] as const
+const applyTargetChoices = ['tsconfig', 'prettier', 'concurrently', 'cdk8s', 'vitest'] as const
 type ApplyTargetChoice = (typeof applyTargetChoices)[number]
 
 const configChoices = ['all', ...applyTargetChoices] as const
@@ -27,7 +28,8 @@ const configRunners: Record<ApplyTargetChoice, typeof applyTypescriptConfig> = {
 	tsconfig: applyTypescriptConfig,
 	prettier: applyPrettierConfig,
 	concurrently: applyConcurrentlyConfig,
-	cdk8s: applyCdk8sConfig
+	cdk8s: applyCdk8sConfig,
+	vitest: applyVitestConfig
 }
 
 function resolveApplyTargets(configs: ConfigChoice[]): ApplyTargetChoice[] {

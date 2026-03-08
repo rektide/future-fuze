@@ -59,6 +59,7 @@ node ./node_modules/@future-fuze/package-config/index.ts apply --config tsconfig
 node ./node_modules/@future-fuze/package-config/index.ts apply --config prettier
 node ./node_modules/@future-fuze/package-config/index.ts apply --config concurrently
 node ./node_modules/@future-fuze/package-config/index.ts apply --config cdk8s
+node ./node_modules/@future-fuze/package-config/index.ts apply --config vitest
 node ./node_modules/@future-fuze/package-config/index.ts apply --config tsconfig --config prettier
 node ./node_modules/@future-fuze/package-config/index.ts apply --config all
 node ./node_modules/@future-fuze/package-config/index.ts apply --config all --recursive
@@ -68,7 +69,7 @@ node ./node_modules/@future-fuze/package-config/apply.ts --config prettier
 
 ### Global flags
 
-- `--config <name>`: config to apply (`tsconfig`, `prettier`, `concurrently`, `cdk8s`, `all`); repeat to apply multiple configs
+- `--config <name>`: config to apply (`tsconfig`, `prettier`, `concurrently`, `cdk8s`, `vitest`, `all`); repeat to apply multiple configs
 - `--recursive`, `-r`: apply to each discovered package project under current project root
 - `--tsconfig-profile <profile>`: tsconfig profile (`base` default, `cdk8s`) when applying `tsconfig`
 - `--dry-run`: print planned install/file changes without writing
@@ -90,6 +91,8 @@ not mixed nested structures:
 - `concurrently/scripts.json` or `concurrently/scripts.ts`
 - `cdk8s/devDependencies.json` or `cdk8s/devDependencies.ts`
 - `cdk8s/scripts.json` or `cdk8s/scripts.ts`
+- `vitest/devDependencies.json` or `vitest/devDependencies.ts`
+- `vitest/scripts.json` or `vitest/scripts.ts`
 
 Optional monorepo root overrides can be provided in `recursive/` subfolders
 for configs that support package section updates:
@@ -101,6 +104,8 @@ for configs that support package section updates:
 - `concurrently/recursive/scripts.json` or `.ts`
 - `cdk8s/recursive/devDependencies.json` or `.ts`
 - `cdk8s/recursive/scripts.json` or `.ts`
+- `vitest/recursive/devDependencies.json` or `.ts`
+- `vitest/recursive/scripts.json` or `.ts`
 
 When using `.ts` files, export either the named key (`devDependencies` / `scripts`) or `config`.
 

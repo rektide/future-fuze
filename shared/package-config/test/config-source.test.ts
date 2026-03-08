@@ -19,17 +19,17 @@ afterEach(async () => {
 })
 
 describe('loadNamedStringRecordConfig', () => {
-	test('loads named export from TypeScript config file', async () => {
-		const directoryPath = await createTempDirectory()
-		await writeFile(
-			join(directoryPath, 'scripts.ts'),
-			"export const scripts = { 'check:tsgo': 'tsgo' }\n",
-			'utf8'
-		)
+		test('loads named export from TypeScript config file', async () => {
+			const directoryPath = await createTempDirectory()
+			await writeFile(
+				join(directoryPath, 'scripts.ts'),
+				"export const scripts = { 'test:tsgo': 'tsgo' }\n",
+				'utf8'
+			)
 
-		const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
-		expect(loaded).toEqual({ 'check:tsgo': 'tsgo' })
-	})
+			const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
+			expect(loaded).toEqual({ 'test:tsgo': 'tsgo' })
+		})
 
 	test('falls back to config export when named export is absent', async () => {
 		const directoryPath = await createTempDirectory()
@@ -47,22 +47,22 @@ describe('loadNamedStringRecordConfig', () => {
 		expect(loaded).toEqual({ '@typescript/native-preview': '*' })
 	})
 
-	test('prefers TypeScript source over JSON source', async () => {
-		const directoryPath = await createTempDirectory()
-		await writeFile(
-			join(directoryPath, 'scripts.ts'),
-			"export const scripts = { 'check:tsgo': 'from-ts' }\n",
-			'utf8'
-		)
-		await writeFile(
-			join(directoryPath, 'scripts.json'),
-			JSON.stringify({ 'check:tsgo': 'from-json' }, null, 2),
-			'utf8'
-		)
+		test('prefers TypeScript source over JSON source', async () => {
+			const directoryPath = await createTempDirectory()
+			await writeFile(
+				join(directoryPath, 'scripts.ts'),
+				"export const scripts = { 'test:tsgo': 'from-ts' }\n",
+				'utf8'
+			)
+			await writeFile(
+				join(directoryPath, 'scripts.json'),
+				JSON.stringify({ 'test:tsgo': 'from-json' }, null, 2),
+				'utf8'
+			)
 
-		const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
-		expect(loaded).toEqual({ 'check:tsgo': 'from-ts' })
-	})
+			const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
+			expect(loaded).toEqual({ 'test:tsgo': 'from-ts' })
+		})
 
 	test('treats empty JSON config source as no-op', async () => {
 		const directoryPath = await createTempDirectory()

@@ -65,7 +65,7 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    a. apply `concurrently/devDependencies.json` and `concurrently/scripts.json` settings to target `package.json`
    a. support `.ts` source alternatives (`devDependencies.ts` / `scripts.ts`) with named export (`devDependencies` / `scripts`) or `config`
    a. include `devDependencies.concurrently: "*"`
-   a. include scripts `build: "concurrently build:*"` and `check: "concurrently check:*"`
+   a. include scripts `build: "concurrently build:*"` and `test: "concurrently test:*"`
    a. if `concurrently/recursive/` sources exist and target is a monorepo root, use those instead of base sources for root-level apply
    a. if target is a leaf package, ignore `concurrently/recursive/` sources
    a. honor `--conflict` behavior and `--dry-run`
@@ -75,6 +75,14 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    a. support optional `.ts` source alternatives (`scripts.ts` / `devDependencies.ts`) with named export (`scripts` / `devDependencies`) or `config`
    a. if `cdk8s/recursive/` sources exist and target is a monorepo root, use those instead of base sources for root-level apply
    a. if target is a leaf package, ignore `cdk8s/recursive/` sources
+   a. honor `--conflict` behavior and `--dry-run`
+1. create `package-config/vitest/apply.ts`
+   a. apply `vitest/devDependencies.json` and `vitest/scripts.json` settings to target `package.json`
+   a. include `devDependencies.vitest: "*"`
+   a. include script `test:vitest: "vitest run"`
+   a. support optional `.ts` source alternatives (`scripts.ts` / `devDependencies.ts`) with named export (`scripts` / `devDependencies`) or `config`
+   a. if `vitest/recursive/` sources exist and target is a monorepo root, use those instead of base sources for root-level apply
+   a. if target is a leaf package, ignore `vitest/recursive/` sources
    a. honor `--conflict` behavior and `--dry-run`
 1. add tests
    a. fixture tests for npm and pnpm projects

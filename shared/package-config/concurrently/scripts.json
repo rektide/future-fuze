@@ -1,4 +1,4 @@
 {
 	"build": "concurrently build:*",
-	"check": "concurrently check:*"
+	"test": "concurrently test:*"
 }

@@ -153,7 +153,7 @@ afterEach(async () => {
 						'@typescript/native-preview': '*'
 					},
 					scripts: {
-						'check:tsgo': 'old-root-script'
+						'test:tsgo': 'old-root-script'
 					}
 				},
 				null,
@@ -174,7 +174,7 @@ afterEach(async () => {
 							'@typescript/native-preview': '*'
 						},
 						scripts: {
-							'check:tsgo': 'old-leaf-script'
+							'test:tsgo': 'old-leaf-script'
 						}
 					},
 					null,
@@ -194,7 +194,7 @@ afterEach(async () => {
 		const rootPackageJson = JSON.parse(await readFile(rootPackageJsonPath, 'utf8')) as {
 			scripts: Record<string, string>
 		}
-		expect(rootPackageJson.scripts['check:tsgo']).toBe('pnpm -r run check:tsgo')
+		expect(rootPackageJson.scripts['test:tsgo']).toBe('pnpm -r run test:tsgo')
 
 		const leafAPackageJson = JSON.parse(await readFile(leafAPackageJsonPath, 'utf8')) as {
 			scripts: Record<string, string>
@@ -202,8 +202,8 @@ afterEach(async () => {
 		const leafBPackageJson = JSON.parse(await readFile(leafBPackageJsonPath, 'utf8')) as {
 			scripts: Record<string, string>
 		}
-		expect(leafAPackageJson.scripts['check:tsgo']).toBe('tsgo')
-		expect(leafBPackageJson.scripts['check:tsgo']).toBe('tsgo')
+		expect(leafAPackageJson.scripts['test:tsgo']).toBe('tsgo')
+		expect(leafBPackageJson.scripts['test:tsgo']).toBe('tsgo')
 	})
 
 	test('uses cdk8s recursive script at monorepo root only', async () => {
@@ -326,6 +326,21 @@ afterEach(async () => {
 })
 
 describe('apply CLI conflict handling', () => {
+	test('applies vitest config script and dependency', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const packageJsonPath = join(projectPath, 'package.json')
+
+		const result = await runApply(['--config', 'vitest', '--conflict', 'overwrite'], projectPath)
+
+		expect(result.code).toBe(0)
+		const saved = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
+			devDependencies: Record<string, string>
+			scripts: Record<string, string>
+		}
+		expect(saved.devDependencies.vitest).toBe('*')
+		expect(saved.scripts['test:vitest']).toBe('vitest run')
+	})
+
 	test('applies cdk8s script for synth', async () => {
 		const projectPath = await createFixtureProject('npm-project')
 		const packageJsonPath = join(projectPath, 'package.json')
@@ -368,7 +383,7 @@ describe('apply CLI conflict handling', () => {
 		}
 		expect(saved.devDependencies.concurrently).toBe('*')
 		expect(saved.scripts.build).toBe('concurrently build:*')
-		expect(saved.scripts.check).toBe('concurrently check:*')
+		expect(saved.scripts.test).toBe('concurrently test:*')
 	})
 
 	test('applies typescript package.json scripts and devDependencies', async () => {
@@ -386,7 +401,7 @@ describe('apply CLI conflict handling', () => {
 						'@typescript/native-preview': '0.0.1'
 					},
 					scripts: {
-						'check:tsgo': 'old-command'
+						'test:tsgo': 'old-command'
 					}
 				},
 				null,
@@ -403,7 +418,7 @@ describe('apply CLI conflict handling', () => {
 			scripts: Record<string, string>
 		}
 		expect(saved.devDependencies['@typescript/native-preview']).toBe('*')
-		expect(saved.scripts['check:tsgo']).toBe('tsgo')
+		expect(saved.scripts['test:tsgo']).toBe('tsgo')
 	})
 
 	test('respects skip conflict mode for package.json script updates', async () => {
@@ -421,7 +436,7 @@ describe('apply CLI conflict handling', () => {
 						'@typescript/native-preview': '*'
 					},
 					scripts: {
-						'check:tsgo': 'old-command'
+						'test:tsgo': 'old-command'
 					}
 				},
 				null,
@@ -436,7 +451,7 @@ describe('apply CLI conflict handling', () => {
 		const saved = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
 			scripts: Record<string, string>
 		}
-		expect(saved.scripts['check:tsgo']).toBe('old-command')
+		expect(saved.scripts['test:tsgo']).toBe('old-command')
 	})
 
 	test('fails on tsconfig conflict by default', async () => {
