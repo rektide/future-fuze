@@ -5,34 +5,32 @@ import { pathToFileURL } from 'node:url'
 
 import { cli, define } from 'gunshi'
 
-import conflictPlugin from './gunshi/conflict.ts'
-import dryRunPlugin from './gunshi/dry-run.ts'
-import updatePlugin from './gunshi/update.ts'
-import prettierApplyCommand from './prettier/apply.ts'
-import typescriptApplyCommand from './typescript/apply.ts'
+import { applySubCommands, createApplyPlugins } from './apply.ts'
 
-export function createApplyPlugins() {
-	return [updatePlugin(), dryRunPlugin(), conflictPlugin()]
-}
+const entryCommand = define({
+	name: 'package-config',
+	description: 'Manage shared package-config presets',
+	run: () => {
+		console.log('Select a subcommand (apply).')
+	}
+})
 
-export const applySubCommands = {
-	tsconfig: typescriptApplyCommand,
-	prettier: prettierApplyCommand
-}
-
-export const applyCommand = define({
+const applyCommand = define({
 	name: 'apply',
 	description: 'Apply shared package-config presets to a project',
+	subCommands: applySubCommands,
 	run: () => {
 		console.log('Select a config to apply (tsconfig, prettier).')
 	}
 })
 
 export async function main(argv = process.argv.slice(2)): Promise<void> {
-	await cli(argv, applyCommand, {
-		name: '@future-fuze/package-config apply',
+	await cli(argv, entryCommand, {
+		name: '@future-fuze/package-config',
 		plugins: createApplyPlugins(),
-		subCommands: applySubCommands
+		subCommands: {
+			apply: applyCommand
+		}
 	})
 }
 

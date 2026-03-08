@@ -7,6 +7,7 @@ import { spawn } from 'node:child_process'
 import { afterEach, describe, expect, test } from 'vitest'
 
 const applyCliPath = fileURLToPath(new URL('../apply.ts', import.meta.url))
+const indexCliPath = fileURLToPath(new URL('../index.ts', import.meta.url))
 const fixturesRoot = fileURLToPath(new URL('./fixtures', import.meta.url))
 
 const temporaryDirectories: string[] = []
@@ -52,11 +53,51 @@ async function runApply(args: string[], cwd: string) {
 	})
 }
 
+async function runIndex(args: string[], cwd: string) {
+	return await new Promise<{ code: number; stdout: string; stderr: string }>((resolve, reject) => {
+		const child = spawn('node', [indexCliPath, ...args], {
+			cwd,
+			env: {
+				...process.env,
+				NO_COLOR: '1'
+			}
+		})
+
+		let stdout = ''
+		let stderr = ''
+
+		child.stdout.on('data', (chunk: unknown) => {
+			stdout += String(chunk)
+		})
+
+		child.stderr.on('data', (chunk: unknown) => {
+			stderr += String(chunk)
+		})
+
+		child.on('error', reject)
+		child.on('close', (code: number | null) => {
+			resolve({
+				code: code ?? 1,
+				stdout,
+				stderr
+			})
+		})
+	})
+}
+
 afterEach(async () => {
 	await Promise.all(temporaryDirectories.splice(0).map(directory => rm(directory, { recursive: true, force: true })))
 })
 
 describe('apply CLI package manager detection', () => {
+	test('index command calls apply subcommand', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const result = await runIndex(['apply', 'tsconfig', '--dry-run'], projectPath)
+
+		expect(result.code).toBe(0)
+		expect(result.stdout).toContain('[dry-run] npm install --save-dev @future-fuze/package-config')
+	})
+
 	test('uses package metadata before lockfiles', async () => {
 		const projectPath = await createFixtureProject('pnpm-project')
 		const result = await runApply(['tsconfig', '--dry-run'], projectPath)

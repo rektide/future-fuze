@@ -45,6 +45,8 @@ Or create `.prettierrc.json`:
 Use the apply tool to configure the current project in-place:
 
 ```sh
+node ./node_modules/@future-fuze/package-config/index.ts apply tsconfig
+node ./node_modules/@future-fuze/package-config/index.ts apply prettier
 node ./node_modules/@future-fuze/package-config/apply.ts tsconfig
 node ./node_modules/@future-fuze/package-config/apply.ts prettier
 ```
