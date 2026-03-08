@@ -153,7 +153,7 @@ afterEach(async () => {
 						'@typescript/native-preview': '*'
 					},
 					scripts: {
-						'checkbuild:tsgo': 'old-root-script'
+						'check:tsgo': 'old-root-script'
 					}
 				},
 				null,
@@ -174,7 +174,7 @@ afterEach(async () => {
 							'@typescript/native-preview': '*'
 						},
 						scripts: {
-							'checkbuild:tsgo': 'old-leaf-script'
+							'check:tsgo': 'old-leaf-script'
 						}
 					},
 					null,
@@ -194,7 +194,7 @@ afterEach(async () => {
 		const rootPackageJson = JSON.parse(await readFile(rootPackageJsonPath, 'utf8')) as {
 			scripts: Record<string, string>
 		}
-		expect(rootPackageJson.scripts['checkbuild:tsgo']).toBe('pnpm -r run checkbuild:tsgo')
+		expect(rootPackageJson.scripts['check:tsgo']).toBe('pnpm -r run check:tsgo')
 
 		const leafAPackageJson = JSON.parse(await readFile(leafAPackageJsonPath, 'utf8')) as {
 			scripts: Record<string, string>
@@ -202,8 +202,8 @@ afterEach(async () => {
 		const leafBPackageJson = JSON.parse(await readFile(leafBPackageJsonPath, 'utf8')) as {
 			scripts: Record<string, string>
 		}
-		expect(leafAPackageJson.scripts['checkbuild:tsgo']).toBe('tsgo')
-		expect(leafBPackageJson.scripts['checkbuild:tsgo']).toBe('tsgo')
+		expect(leafAPackageJson.scripts['check:tsgo']).toBe('tsgo')
+		expect(leafBPackageJson.scripts['check:tsgo']).toBe('tsgo')
 	})
 
 	test('uses cdk8s recursive script at monorepo root only', async () => {
@@ -349,7 +349,7 @@ describe('apply CLI conflict handling', () => {
 						'@typescript/native-preview': '0.0.1'
 					},
 					scripts: {
-						'checkbuild:tsgo': 'old-command'
+						'check:tsgo': 'old-command'
 					}
 				},
 				null,
@@ -366,7 +366,7 @@ describe('apply CLI conflict handling', () => {
 			scripts: Record<string, string>
 		}
 		expect(saved.devDependencies['@typescript/native-preview']).toBe('*')
-		expect(saved.scripts['checkbuild:tsgo']).toBe('tsgo')
+		expect(saved.scripts['check:tsgo']).toBe('tsgo')
 	})
 
 	test('respects skip conflict mode for package.json script updates', async () => {
@@ -384,7 +384,7 @@ describe('apply CLI conflict handling', () => {
 						'@typescript/native-preview': '*'
 					},
 					scripts: {
-						'checkbuild:tsgo': 'old-command'
+						'check:tsgo': 'old-command'
 					}
 				},
 				null,
@@ -399,7 +399,7 @@ describe('apply CLI conflict handling', () => {
 		const saved = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
 			scripts: Record<string, string>
 		}
-		expect(saved.scripts['checkbuild:tsgo']).toBe('old-command')
+		expect(saved.scripts['check:tsgo']).toBe('old-command')
 	})
 
 	test('fails on tsconfig conflict by default', async () => {

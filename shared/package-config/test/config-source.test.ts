@@ -23,12 +23,12 @@ describe('loadNamedStringRecordConfig', () => {
 		const directoryPath = await createTempDirectory()
 		await writeFile(
 			join(directoryPath, 'scripts.ts'),
-			"export const scripts = { 'checkbuild:tsgo': 'tsgo' }\n",
+			"export const scripts = { 'check:tsgo': 'tsgo' }\n",
 			'utf8'
 		)
 
 		const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
-		expect(loaded).toEqual({ 'checkbuild:tsgo': 'tsgo' })
+		expect(loaded).toEqual({ 'check:tsgo': 'tsgo' })
 	})
 
 	test('falls back to config export when named export is absent', async () => {
@@ -51,17 +51,17 @@ describe('loadNamedStringRecordConfig', () => {
 		const directoryPath = await createTempDirectory()
 		await writeFile(
 			join(directoryPath, 'scripts.ts'),
-			"export const scripts = { 'checkbuild:tsgo': 'from-ts' }\n",
+			"export const scripts = { 'check:tsgo': 'from-ts' }\n",
 			'utf8'
 		)
 		await writeFile(
 			join(directoryPath, 'scripts.json'),
-			JSON.stringify({ 'checkbuild:tsgo': 'from-json' }, null, 2),
+			JSON.stringify({ 'check:tsgo': 'from-json' }, null, 2),
 			'utf8'
 		)
 
 		const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
-		expect(loaded).toEqual({ 'checkbuild:tsgo': 'from-ts' })
+		expect(loaded).toEqual({ 'check:tsgo': 'from-ts' })
 	})
 
 	test('treats empty JSON config source as no-op', async () => {
