@@ -42,6 +42,7 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
    a. add `gunshi` dependency
    a. wire `gunshi/update.ts`, `gunshi/dry-run.ts`, and `gunshi/conflict.ts`
    a. support repeatable `--config` argument to select apply targets
+   a. support `--config all` to run all apply targets
    a. ensure `@future-fuze/package-config` is installed in `devDependencies` when missing
    a. auto-detect `pnpm` or `npm` and use detected tool for installs
    a. if `--update` is set, install `@future-fuze/package-config@latest`
@@ -62,7 +63,6 @@ we are creating an `apply` meta-tool for package-config to make it easier to app
 
 ## future tasks
 
-- add batch apply to apply multiple package configs at once
 - add recursive apply to apply recursively to packages
 - add a doctor/check mode to report drift without modifying files
 

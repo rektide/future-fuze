@@ -98,17 +98,26 @@ afterEach(async () => {
 			expect(result.stdout).toContain('[dry-run] npm install --save-dev @future-fuze/package-config')
 		})
 
-		test('applies multiple configs in one invocation', async () => {
-			const projectPath = await createFixtureProject('npm-project')
-			const result = await runApply(
-				['--config', 'tsconfig', '--config', 'prettier', '--dry-run'],
-				projectPath
-			)
+	test('applies multiple configs in one invocation', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const result = await runApply(
+			['--config', 'tsconfig', '--config', 'prettier', '--dry-run'],
+			projectPath
+		)
 
 			expect(result.code).toBe(0)
 			expect(result.stdout).toContain('[dry-run] Create tsconfig.json')
-			expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
-		})
+		expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
+	})
+
+	test('applies all configs with --config all', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const result = await runApply(['--config', 'all', '--dry-run'], projectPath)
+
+		expect(result.code).toBe(0)
+		expect(result.stdout).toContain('[dry-run] Create tsconfig.json')
+		expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
+	})
 
 		test('uses package metadata before lockfiles', async () => {
 			const projectPath = await createFixtureProject('pnpm-project')

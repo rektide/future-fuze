@@ -14,12 +14,30 @@ import { loadProjectContext } from './internal/project.ts'
 import { applyPrettierConfig } from './prettier/apply.ts'
 import { applyTypescriptConfig } from './typescript/apply.ts'
 
-const configChoices = ['tsconfig', 'prettier'] as const
+const applyTargetChoices = ['tsconfig', 'prettier'] as const
+type ApplyTargetChoice = (typeof applyTargetChoices)[number]
+
+const configChoices = ['all', ...applyTargetChoices] as const
 type ConfigChoice = (typeof configChoices)[number]
 
-const configRunners: Record<ConfigChoice, typeof applyTypescriptConfig> = {
+const configRunners: Record<ApplyTargetChoice, typeof applyTypescriptConfig> = {
 	tsconfig: applyTypescriptConfig,
 	prettier: applyPrettierConfig
+}
+
+function resolveApplyTargets(configs: ConfigChoice[]): ApplyTargetChoice[] {
+	if (configs.includes('all')) {
+		return [...applyTargetChoices]
+	}
+
+	const uniqueTargets = new Set<ApplyTargetChoice>()
+	for (const config of configs) {
+		if (config !== 'all') {
+			uniqueTargets.add(config)
+		}
+	}
+
+	return [...uniqueTargets]
 }
 
 export function createApplyPlugins() {
@@ -35,7 +53,7 @@ export const applyCommand = define({
 			choices: [...configChoices],
 			multiple: true,
 			required: true,
-			description: 'Config to apply; pass multiple --config arguments to apply more than one'
+			description: 'Config to apply; pass multiple --config arguments or use --config all'
 		}
 	},
 	run: async ctx => {
@@ -43,9 +61,9 @@ export const applyCommand = define({
 		const project = await loadProjectContext()
 		await ensurePackageConfigDependency(project, options)
 
-		const requestedConfigs = ctx.values.config
-		for (const config of requestedConfigs) {
-			await configRunners[config](project, options)
+		const applyTargets = resolveApplyTargets(ctx.values.config)
+		for (const applyTarget of applyTargets) {
+			await configRunners[applyTarget](project, options)
 		}
 	}
 })
