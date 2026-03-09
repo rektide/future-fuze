@@ -11,9 +11,6 @@ importers:
 
   .:
     dependencies:
-      '@future-fuze/package-config':
-        specifier: link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config
-        version: link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config
       cdk8s:
         specifier: ^2.66.2
         version: 2.70.50(constructs@10.5.1)
@@ -24,6 +21,9 @@ importers:
         specifier: ^10.3.0
         version: 10.5.1
     devDependencies:
+      '@future-fuze/package-config':
+        specifier: link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config
+        version: link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config
       '@typescript/native-preview':
         specifier: '*'
         version: 7.0.0-dev.20260308.1

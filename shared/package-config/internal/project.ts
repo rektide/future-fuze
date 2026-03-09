@@ -51,10 +51,14 @@ async function detectMonorepo(
 	projectRoot: string,
 	packageJson: PackageJsonData
 ): Promise<{ isMonorepoRoot: boolean; monorepoManager?: MonorepoManager }> {
-	if (await exists(join(projectRoot, 'pnpm-workspace.yaml'))) {
-		return {
-			isMonorepoRoot: true,
-			monorepoManager: 'pnpm'
+	const pnpmWorkspacePath = join(projectRoot, 'pnpm-workspace.yaml')
+	if (await exists(pnpmWorkspacePath)) {
+		const content = await readFile(pnpmWorkspacePath, 'utf8')
+		if (/^packages:/m.test(content)) {
+			return {
+				isMonorepoRoot: true,
+				monorepoManager: 'pnpm'
+			}
 		}
 	}
 

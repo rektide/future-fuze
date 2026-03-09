@@ -13,16 +13,16 @@
 		"test:vitest": "vitest run"
 	},
 	"dependencies": {
-		"@future-fuze/package-config": "link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config",
 		"cdk8s": "^2.66.2",
 		"cdk8s-plus-26": "^2.18.28",
 		"constructs": "^10.3.0"
 	},
 	"devDependencies": {
-		"cdk8s-cli": "^2.2.5",
-		"typescript": "^5.7.0",
+		"@future-fuze/package-config": "link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config",
 		"@typescript/native-preview": "*",
+		"cdk8s-cli": "^2.2.5",
 		"concurrently": "*",
+		"typescript": "^5.7.0",
 		"vitest": "*"
 	}
 }
