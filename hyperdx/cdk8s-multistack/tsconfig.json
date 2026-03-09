@@ -1,0 +1,6 @@
+{
+	"include": [
+		"packages/*/src/**/*.ts"
+	],
+	"extends": "@future-fuze/package-config/typescript/base.json"
+}

@@ -1,10 +1,28 @@
 {
-  "name": "hyperdx-cdk8s-multistack",
-  "private": true,
-  "type": "module",
-  "packageManager": "pnpm@10.6.5",
-  "scripts": {
-    "typecheck": "pnpm -r run typecheck",
-    "synth": "pnpm -r run synth"
-  }
+	"name": "hyperdx-cdk8s-multistack",
+	"private": true,
+	"type": "module",
+	"packageManager": "pnpm@10.6.5",
+	"scripts": {
+		"typecheck": "pnpm -r run typecheck",
+		"synth": "pnpm -r run synth",
+		"test:tsgo": "pnpm -r run test:tsgo",
+		"build": "concurrently pnpm:build:*",
+		"test": "concurrently pnpm:test:*",
+		"build:cdk8s": "pnpm -r run synth",
+		"test:vitest": "vitest run"
+	},
+	"pnpm": {
+		"overrides": {
+			"@future-fuze/package-config": "link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config"
+		}
+	},
+	"dependencies": {
+		"@future-fuze/package-config": "link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config"
+	},
+	"devDependencies": {
+		"@typescript/native-preview": "*",
+		"concurrently": "*",
+		"vitest": "*"
+	}
 }
