@@ -1,6 +1,6 @@
 import { plugin } from 'gunshi/plugin'
 
-import { conflictModes, defaultConflictMode } from '../internal/types.ts'
+import { applyEnumChoices, applyOptionDefaults } from '../internal/options/schema.ts'
 
 export const pluginId = 'future-fuze:apply-conflict' as const
 export type PluginId = typeof pluginId
@@ -12,8 +12,8 @@ export default function conflictPlugin() {
 		setup: ctx => {
 			ctx.addGlobalOption('conflict', {
 				type: 'enum',
-				default: defaultConflictMode,
-				choices: [...conflictModes],
+				default: applyOptionDefaults.conflict,
+				choices: [...applyEnumChoices.conflict],
 				description: 'Conflict behavior: error, overwrite, or skip'
 			})
 		}

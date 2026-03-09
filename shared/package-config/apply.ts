@@ -16,6 +16,7 @@ import { collectApplyTargetRoots } from './internal/targets.ts'
 import { ensurePackageConfigDependency } from './internal/install.ts'
 import { logInfo } from './internal/log.ts'
 import { parseApplyRuntimeOptions } from './internal/options.ts'
+import { applyEnumChoices, applyOptionDefaults } from './internal/options/schema.ts'
 import { loadProjectContext } from './internal/project.ts'
 import { applyPrettierConfig } from './prettier/apply.ts'
 import { applyTypescriptConfig } from './typescript/apply.mts'
@@ -73,8 +74,8 @@ export const applyCommand = define({
 		},
 		tsconfigProfile: {
 			type: 'enum',
-			choices: ['base', 'cdk8s'],
-			default: 'base',
+			choices: [...applyEnumChoices.tsconfigProfile],
+			default: applyOptionDefaults.tsconfigProfile,
 			toKebab: true,
 			description: 'Profile for tsconfig apply behavior'
 		}

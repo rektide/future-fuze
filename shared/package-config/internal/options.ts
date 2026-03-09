@@ -1,40 +1,80 @@
-import {
-	conflictModes,
-	defaultConflictMode,
-	type ApplyRuntimeOptions,
-	type ConflictMode,
-	type TsconfigProfile
-} from './types.ts'
+import { applyEnumChoices, applyOptionDefaults } from './options/schema.ts'
 
-const tsconfigProfiles = new Set<TsconfigProfile>(['base', 'cdk8s'])
-const conflictModeSet = new Set<ConflictMode>(conflictModes)
+import type { ApplyRuntimeOptions, ConflictMode, TsconfigProfile } from './types.ts'
 
-interface ApplyOptionValues {
-	update?: boolean
-	dryRun?: boolean
-	verbose?: boolean
+export interface ApplyCliValues {
+	update?: unknown
+	dryRun?: unknown
+	verbose?: unknown
 	conflict?: unknown
-	tsconfigProfile?: string
+	tsconfigProfile?: unknown
 	[key: string]: unknown
 }
 
-function parseConflictMode(value: unknown): ConflictMode {
-	if (typeof value === 'string' && conflictModeSet.has(value as ConflictMode)) {
-		return value as ConflictMode
-	}
-
-	return defaultConflictMode
+interface ApplyRawOptions {
+	update: boolean
+	dryRun: boolean
+	verbose: boolean
+	conflict: unknown
+	tsconfigProfile: unknown
 }
 
-export function parseApplyRuntimeOptions(values: ApplyOptionValues): ApplyRuntimeOptions {
-	return {
-		update: values.update === true,
-		dryRun: values.dryRun === true,
-		verbose: values.verbose === true,
-		conflict: parseConflictMode(values.conflict),
-		tsconfigProfile:
-			values.tsconfigProfile && tsconfigProfiles.has(values.tsconfigProfile as TsconfigProfile)
-				? (values.tsconfigProfile as TsconfigProfile)
-				: 'base'
+function parseBooleanFlag(value: unknown, fallback: boolean): boolean {
+	if (value === true) {
+		return true
 	}
+
+	if (value === false) {
+		return false
+	}
+
+	return fallback
+}
+
+function parseEnumChoice<TChoice extends string>(
+	value: unknown,
+	choices: readonly TChoice[],
+	fallback: TChoice
+): TChoice {
+	if (typeof value !== 'string') {
+		return fallback
+	}
+
+	if (choices.includes(value as TChoice)) {
+		return value as TChoice
+	}
+
+	return fallback
+}
+
+function coerceApplyCliValues(values: ApplyCliValues): ApplyRawOptions {
+	return {
+		update: parseBooleanFlag(values.update, applyOptionDefaults.update),
+		dryRun: parseBooleanFlag(values.dryRun, applyOptionDefaults.dryRun),
+		verbose: parseBooleanFlag(values.verbose, applyOptionDefaults.verbose),
+		conflict: values.conflict,
+		tsconfigProfile: values.tsconfigProfile
+	}
+}
+
+export function normalizeApplyRuntimeOptions(raw: ApplyRawOptions): ApplyRuntimeOptions {
+	return {
+		update: raw.update,
+		dryRun: raw.dryRun,
+		verbose: raw.verbose,
+		conflict: parseEnumChoice(
+			raw.conflict,
+			applyEnumChoices.conflict,
+			applyOptionDefaults.conflict
+		) as ConflictMode,
+		tsconfigProfile: parseEnumChoice(
+			raw.tsconfigProfile,
+			applyEnumChoices.tsconfigProfile,
+			applyOptionDefaults.tsconfigProfile
+		) as TsconfigProfile
+	}
+}
+
+export function parseApplyRuntimeOptions(values: ApplyCliValues): ApplyRuntimeOptions {
+	return normalizeApplyRuntimeOptions(coerceApplyCliValues(values))
 }
