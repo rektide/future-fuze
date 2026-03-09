@@ -15,16 +15,16 @@
 	"exports": {
 		"./index": "./index.ts",
 		"./apply": "./apply.ts",
-		"./cdk8s/apply": "./cdk8s/apply.mts",
-		"./concurrently/apply": "./concurrently/apply.mts",
-		"./vitest/apply": "./vitest/apply.mts",
+		"./cdk8s/apply": "./cdk8s/apply.ts",
+		"./concurrently/apply": "./concurrently/apply.ts",
+		"./vitest/apply": "./vitest/apply.ts",
 		"./esm/apply": "./esm/apply.ts",
 		"./typescript/base.json": "./typescript/base.json",
 		"./typescript/cdk8s.json": "./typescript/cdk8s.json",
-		"./typescript/apply": "./typescript/apply.mts",
+		"./typescript/apply": "./typescript/apply.ts",
 		"./formatting": "./formatting/index.json",
-	 "./formatting.json": "./formatting/index.json",
-    "./formatting/apply": "./formatting/apply.ts"
+		"./formatting.json": "./formatting/index.json",
+		"./formatting/apply": "./formatting/apply.ts"
 	},
 	"files": [
 		"index.ts",
