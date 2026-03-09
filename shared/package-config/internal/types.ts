@@ -1,9 +1,12 @@
 export const packageConfigPackageName = '@future-fuze/package-config'
 
+export const conflictModes = ['error', 'overwrite', 'skip'] as const
+
 export type PackageManager = 'pnpm' | 'npm'
 export type MonorepoManager = 'pnpm' | 'npm'
 
-export type ConflictMode = 'error' | 'overwrite' | 'skip'
+export type ConflictMode = (typeof conflictModes)[number]
+export const defaultConflictMode: ConflictMode = 'error'
 export type TsconfigProfile = 'base' | 'cdk8s'
 
 export interface PackageJsonData {
