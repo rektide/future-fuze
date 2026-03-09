@@ -14,6 +14,6 @@ export function createPackageJsonOutputLabels(input: LabelInput): PackageJsonOut
 	return {
 		updated: `Apply ${configName} package.json settings`,
 		noChange: `${configName} package.json settings are already up-to-date`,
-		noSource: `No ${input.configId} package.json source found`
+		noSource: `No ${input.configId} config.json source found`
 	}
 }

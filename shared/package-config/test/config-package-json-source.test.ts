@@ -21,10 +21,10 @@ afterEach(async () => {
 })
 
 describe('loadConfigPackageJsonSources', () => {
-	test('loads base package.json source when present', async () => {
+	test('loads base config.json source when present', async () => {
 		const configDirectory = await createTempDirectory()
 		await writeFile(
-			join(configDirectory, 'package.json'),
+			join(configDirectory, 'config.json'),
 			JSON.stringify({ scripts: { test: 'vitest run' } }, null, 2),
 			'utf8'
 		)
@@ -42,12 +42,12 @@ describe('loadConfigPackageJsonSources', () => {
 		const configDirectory = await createTempDirectory()
 		await mkdir(join(configDirectory, 'recursive'), { recursive: true })
 		await writeFile(
-			join(configDirectory, 'package.json'),
+			join(configDirectory, 'config.json'),
 			JSON.stringify({ scripts: { test: 'vitest run' } }, null, 2),
 			'utf8'
 		)
 		await writeFile(
-			join(configDirectory, 'recursive', 'package.json'),
+			join(configDirectory, 'recursive', 'config.json'),
 			JSON.stringify({ scripts: { test: 'pnpm -r run test' } }, null, 2),
 			'utf8'
 		)
@@ -66,7 +66,7 @@ describe('loadConfigPackageJsonSources', () => {
 
 	test('throws when source package.json is empty', async () => {
 		const configDirectory = await createTempDirectory()
-		await writeFile(join(configDirectory, 'package.json'), '', 'utf8')
+		await writeFile(join(configDirectory, 'config.json'), '', 'utf8')
 
 		await expect(
 			loadConfigPackageJsonSources({
@@ -74,6 +74,6 @@ describe('loadConfigPackageJsonSources', () => {
 				configDirectory,
 				isMonorepoRoot: false
 			})
-		).rejects.toThrow('must not be empty')
+		).rejects.toThrow('must not empty')
 	})
 })

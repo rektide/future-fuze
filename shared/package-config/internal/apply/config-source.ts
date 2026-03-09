@@ -23,12 +23,12 @@ async function loadConfigPackageJsonSource(path: string, configId: string) {
 	}
 
 	if (sourceText.trim() === '') {
-		throw new Error(`${path} is empty; ${configId} source package.json must not be empty`)
+		throw new Error(`${path} is empty; ${configId} source config.json must not empty`)
 	}
 
 	const sourceValue = parseJson(sourceText, path)
 	if (!isRecord(sourceValue)) {
-		throw new Error(`${path} must have an object as its package.json root`)
+		throw new Error(`${path} must have an object as its config.json root`)
 	}
 
 	return {
@@ -39,8 +39,8 @@ async function loadConfigPackageJsonSource(path: string, configId: string) {
 export async function loadConfigPackageJsonSources(
 	input: LoadConfigPackageJsonSourcesInput
 ): Promise<ConfigPackageJsonSource[]> {
-	const baseSourcePath = join(input.configDirectory, 'package.json')
-	const recursiveSourcePath = join(input.configDirectory, 'recursive', 'package.json')
+	const baseSourcePath = join(input.configDirectory, 'config.json')
+	const recursiveSourcePath = join(input.configDirectory, 'recursive', 'config.json')
 
 	const sources: ConfigPackageJsonSource[] = []
 	const baseSource = await loadConfigPackageJsonSource(baseSourcePath, input.configId)
