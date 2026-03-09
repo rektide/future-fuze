@@ -78,44 +78,9 @@ async function ensurePackageConfigDependencyImpl(
 	options: ApplyRuntimeOptions
 ): Promise<void> {
 	if (project.packageJson.name === packageConfigPackageName) {
-	 logInfo('install', `Skipping ${packageConfigPackageName} install in its own package workspace`)
-        return
-    }
-
-    const installedAnywhere = hasPackageVersion(project.packageJson, packageConfigPackageName)
-    const installedAsDevDependency = isInDevDependencies(project.packageJson, packageConfigPackageName)
-    if (!options.update && !options.link && installedAsDevDependency) {
-        logInfo('install', `${packageConfigPackageName} already in devDependencies`)
-        return
-    }
-
-    if (!options.update && !options.link && installedAnywhere && !installedAsDevDependency) {
-        logInfo(
-            'install',
-            `${packageConfigPackageName} found outside devDependencies, reinstalling as devDependency`
-        )
-    }
-
-    if (options.link && !installedAnywhere) {
-        logInfo('install', `${packageConfigPackageName} missing, installing`)
-    }
-
-    if (options.link && !installedAsDevDependency) {
-        logInfo('install', `${packageConfigPackageName} already in devDependencies`)
-        return
-    }
-
-    if (options.update && installedAsDevDependency) {
-        logInfo('install', `${packageConfigPackageName} update requested, installing latest as devDependency`)
-        return
-    }
-
-    const packageSpec = options.update
-        ? `${packageConfigPackageName}@latest`
-        : packageConfigPackageName
-    const args = createInstallArgs(project.packageManager, packageSpec)
-    await runPackageManagerCommand(project.packageManager, args, project.projectRoot, options.dryRun)
-}
+		logInfo('install', `Skipping ${packageConfigPackageName} install in its own package workspace`)
+		return
+	}
 
 	const installedAnywhere = hasPackageVersion(project.packageJson, packageConfigPackageName)
 	const installedAsDevDependency = isInDevDependencies(project.packageJson, packageConfigPackageName)
@@ -137,24 +102,13 @@ async function ensurePackageConfigDependencyImpl(
 	}
 
 	if (options.link) {
-        logInfo('install', `${packageConfigPackageName} linking via ${project.packageManager} link`)
-        const linkArgs = createLinkArgs(project.packageManager, packageConfigPackageName)
-        await runPackageManagerCommand(project.packageManager, linkArgs, project.projectRoot, options.dryRun, {
-            cleanEnv: true
-        })
-        return
-    }
-
-    if (options.update) {
-        logInfo('install', `${packageConfigPackageName} update requested, installing latest as devDependency`)
-    }
-
-    const packageSpec = options.update
-        ? `${packageConfigPackageName}@latest`
-        : packageConfigPackageName
-    const args = createInstallArgs(project.packageManager, packageSpec)
-    await runPackageManagerCommand(project.packageManager, args, project.projectRoot, options.dryRun)
-}
+		logInfo('install', `${packageConfigPackageName} linking via ${project.packageManager} link`)
+		const linkArgs = createLinkArgs(project.packageManager, packageConfigPackageName)
+		await runPackageManagerCommand(project.packageManager, linkArgs, project.projectRoot, options.dryRun, {
+			cleanEnv: true
+		})
+		return
+	}
 
 	if (options.update) {
 		logInfo('install', `${packageConfigPackageName} update requested, installing latest as devDependency`)
@@ -171,63 +125,10 @@ export async function ensurePackageConfigDependency(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
 ): Promise<void> {
-	if (project.packageJson.name === packageConfigPackageName) {
-		logInfo('install', `Skipping ${packageConfigPackageName} install in its own package workspace`)
+	const key = project.projectRoot
+	if (ensuredProjects.has(key)) {
 		return
 	}
-
-    if (options.link && !installedAnywhere) {
-        logInfo('install', `Linking ${packageConfigPackageName} via ${project.packageManager} link`)
-        return
-    }
-
-    if (options.update && !installedAnywhere) {
-        logInfo('install', `Updating ${packageConfigPackageName} to latest as devDependency`)
-        await runPackageManagerInstall(project, options.dryRun)
-
-        return
-    }
-
-const packageSpec = options.update
-        ? `${packageConfigPackageName}@latest`
-        : packageConfigPackageName
-
-    const args = createInstallArgs(project.packageManager, packageSpec)
-    await runPackageManagerCommand(project.packageManager, args, project.projectRoot, options.dryRun)
-}
-
- 
-if (options.link && !installedAnywhere) {
-    logInfo('install', `Linking ${packageConfigPackageName} via ${project.packageManager} link`)
-    const linkArgs = createLinkArgs(project.packageManager, packageConfigPackageName)
-    await runPackageManagerCommand(project.packageManager, linkArgs, project.projectRoot, options.dryRun, {
-        cleanEnv: true
-    })
-    return
-}
-
- 
-if (options.update && !installedAnywhere) {
-    logInfo('install', `${packageConfigPackageName} update requested, installing latest as devDependency`)
-}
-
- const packageSpec = options.update
-    ? `${packageConfigPackageName}@latest`
-    : packageConfigPackageName
-const args = createInstallArgs(project.packageManager, packageSpec)
-    await runPackageManagerCommand(project.packageManager, args, project.projectRoot, options.dryRun)
-}
-
-
-
-    if (options.link && !installedAnywhere) {
-        await runPackageManagerCommand(project.packageManager, ['link', packageName], project.projectRoot, options.dryRun, {
-            cleanEnv: true
-        })
-        return
-    }
-}
-
 	await ensurePackageConfigDependencyImpl(project, options)
 	ensuredProjects.add(key)
 }
