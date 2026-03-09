@@ -125,10 +125,40 @@ export async function ensurePackageConfigDependency(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
 ): Promise<void> {
-	const key = project.projectRoot
-	if (ensuredProjects.has(key)) {
+	if (project.packageJson.name === packageConfigPackageName) {
+		logInfo('install', `Skipping ${packageConfigPackageName} install in its own package workspace`)
 		return
 	}
+
+    if (options.link && !installedAnywhere) {
+        logInfo('install', `Linking ${packageConfigPackageName} via ${project.packageManager} link`)
+        return
+    }
+
+    if (options.update && !installedAnywhere) {
+        logInfo('install', `Updating ${packageConfigPackageName} to latest as devDependency`)
+        await runPackageManagerInstall(project, options.dryRun)
+
+        return
+    }
+
+    const packageSpec = options.update
+        ? `${packageConfigPackageName}@latest`
+        : packageConfigPackageName
+
+    const args = createInstallArgs(project.packageManager, packageSpec)
+    await runPackageManagerCommand(project.packageManager, args, project.projectRoot, options.dryRun)
+
+        return
+    }
+
+    if (options.link && !installedAnywhere) {
+        await runPackageManagerCommand(project.packageManager, ['link', packageName], project.projectRoot, options.dryRun, {
+            cleanEnv: true
+        })
+        return
+    }
+}
 
 	await ensurePackageConfigDependencyImpl(project, options)
 	ensuredProjects.add(key)
