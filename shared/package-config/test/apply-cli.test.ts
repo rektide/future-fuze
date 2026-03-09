@@ -101,13 +101,13 @@ afterEach(async () => {
 	test('applies multiple configs in one invocation', async () => {
 		const projectPath = await createFixtureProject('npm-project')
 		const result = await runApply(
-			['--config', 'tsconfig', '--config', 'prettier', '--dry-run'],
+			['--config', 'tsconfig', '--config', 'formatting', '--dry-run'],
 			projectPath
 		)
 
 			expect(result.code).toBe(0)
 			expect(result.stdout).toContain('[dry-run] Create tsconfig.json')
-		expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
+		expect(result.stdout).toContain('[dry-run] Create .formattingrc.json')
 	})
 
 	test('applies all configs with --config all', async () => {
@@ -116,7 +116,7 @@ afterEach(async () => {
 
 		expect(result.code).toBe(0)
 		expect(result.stdout).toContain('[dry-run] Create tsconfig.json')
-		expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
+		expect(result.stdout).toContain('[dry-run] Create .formattingrc.json')
 		expect(result.stdout).toContain('[dry-run] Apply concurrently package.json settings')
 		expect(result.stdout).toContain('[dry-run] Apply cdk8s package.json settings')
 	})
@@ -544,12 +544,12 @@ describe('apply CLI conflict handling', () => {
 		expect(result.stderr).toContain('Conflict at')
 	})
 
-	test('skips conflicting prettier config with --conflict skip', async () => {
+	test('skips conflicting formatting config with --conflict skip', async () => {
 		const projectPath = await createFixtureProject('npm-project')
-		await writeFile(join(projectPath, '.prettierrc.json'), JSON.stringify({ semi: true }, null, 2), 'utf8')
+		await writeFile(join(projectPath, '.formattingrc.json'), JSON.stringify({ semi: true }, null, 2), 'utf8')
 
 		const result = await runApply(
-			['--config', 'prettier', '--dry-run', '--conflict', 'skip'],
+			['--config', 'formatting', '--dry-run', '--conflict', 'skip'],
 			projectPath
 		)
 
@@ -557,23 +557,23 @@ describe('apply CLI conflict handling', () => {
 		expect(result.stdout).toContain('Conflict skipped')
 	})
 
-	test('overwrites conflicting prettier config with --conflict overwrite', async () => {
+	test('overwrites conflicting formatting config with --conflict overwrite', async () => {
 		const projectPath = await createFixtureProject('npm-project')
-		const prettierPath = join(projectPath, '.prettierrc.json')
-		await writeFile(prettierPath, JSON.stringify({ semi: true }, null, 2), 'utf8')
+		const formattingPath = join(projectPath, '.formattingrc.json')
+		await writeFile(formattingPath, JSON.stringify({ semi: true }, null, 2), 'utf8')
 
 		const dryRunResult = await runApply(
-			['--config', 'prettier', '--dry-run', '--conflict', 'overwrite'],
+			['--config', 'formatting', '--dry-run', '--conflict', 'overwrite'],
 			projectPath
 		)
 		expect(dryRunResult.code).toBe(0)
 		expect(dryRunResult.stdout).toContain('[dry-run] Apply Prettier config')
 
-		const applyResult = await runApply(['--config', 'prettier', '--conflict', 'overwrite'], projectPath)
+		const applyResult = await runApply(['--config', 'formatting', '--conflict', 'overwrite'], projectPath)
 		expect(applyResult.code).toBe(0)
 
-		const savedText = await readFile(prettierPath, 'utf8')
-		expect(savedText).toBe('"@future-fuze/package-config/prettier"\n')
+		const savedText = await readFile(formattingPath, 'utf8')
+		expect(savedText).toBe('"@future-fuze/package-config/formatting"\n')
 	})
 
 	test('writes tsconfig extends for comment-preserving input', async () => {

@@ -22,9 +22,9 @@
 		"./typescript/base.json": "./typescript/base.json",
 		"./typescript/cdk8s.json": "./typescript/cdk8s.json",
 		"./typescript/apply": "./typescript/apply.mts",
-		"./prettier": "./prettier/index.json",
-		"./prettier.json": "./prettier/index.json",
-		"./prettier/apply": "./prettier/apply.ts"
+		"./formatting": "./formatting/index.json",
+	 "./formatting.json": "./formatting/index.json",
+    "./formatting/apply": "./formatting/apply.ts"
 	},
 	"files": [
 		"index.ts",

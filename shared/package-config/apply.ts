@@ -20,11 +20,11 @@ import { logInfo } from './internal/log.ts'
 import { parseApplyRuntimeOptions } from './internal/options.ts'
 import { applyEnumChoices, applyOptionDefaults } from './internal/options/schema.ts'
 import { loadProjectContext } from './internal/project.ts'
-import { applyPrettierConfig, runOxfmtAfterInstall } from './prettier/apply.ts'
+import { applyFormattingConfig, runOxfmtAfterInstall } from './formatting/apply.ts'
 import { applyTypescriptConfig } from './typescript/apply.mts'
 import { applyVitestConfig } from './vitest/apply.mts'
 
-const applyTargetChoices = ['tsconfig', 'prettier', 'concurrently', 'cdk8s', 'vitest', 'esm'] as const
+const applyTargetChoices = ['tsconfig', 'formatting', 'concurrently', 'cdk8s', 'vitest', 'esm'] as const
 type ApplyTargetChoice = (typeof applyTargetChoices)[number]
 
 const configChoices = ['all', ...applyTargetChoices] as const
@@ -32,7 +32,7 @@ type ConfigChoice = (typeof configChoices)[number]
 
 const configRunners: Record<ApplyTargetChoice, typeof applyTypescriptConfig> = {
 	tsconfig: applyTypescriptConfig,
-	prettier: applyPrettierConfig,
+	formatting: applyFormattingConfig,
 	concurrently: applyConcurrentlyConfig,
 	cdk8s: applyCdk8sConfig,
 	vitest: applyVitestConfig,

@@ -6,8 +6,8 @@ import { parseJson, readTextFileIfExists, writeTextFileIfChanged } from '../inte
 import { logDryRun, logInfo } from '../internal/log.ts'
 import type { ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
 
-const targetPrettierConfig = '@future-fuze/package-config/prettier'
-const targetPrettierConfigText = `"${targetPrettierConfig}"\n`
+const targetFormattingConfig = '@future-fuze/package-config/formatting'
+const targetFormattingConfigText = `"${targetFormattingConfig}"\n`
 
 async function runOxfmt(projectRoot: string, dryRun: boolean): Promise<void> {
 	if (dryRun) {
@@ -42,33 +42,33 @@ export async function runOxfmtAfterInstall(project: ProjectContext, options: App
 	await runOxfmt(project.projectRoot, options.dryRun)
 }
 
-export async function applyPrettierConfig(
+export async function applyFormattingConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
 ): Promise<void> {
-	const prettierConfigPath = join(project.projectRoot, '.prettierrc.json')
-	const existingPrettierText = await readTextFileIfExists(prettierConfigPath)
+	const formattingConfigPath = join(project.projectRoot, '.prettierrc.json')
+	const existingFormattingText = await readTextFileIfExists(formattingConfigPath)
 
-	if (!existingPrettierText) {
-		await writeTextFileIfChanged(prettierConfigPath, targetPrettierConfigText, {
+	if (!existingFormattingText) {
+		await writeTextFileIfChanged(formattingConfigPath, targetFormattingConfigText, {
 			dryRun: options.dryRun,
 			label: 'Create .prettierrc.json'
 		})
 		return
 	}
 
-	if (existingPrettierText.trim() === targetPrettierConfigText.trim()) {
-		logInfo('apply', `Prettier config already set to ${targetPrettierConfig}`)
+	if (existingFormattingText.trim() === targetFormattingConfigText.trim()) {
+		logInfo('apply', `Formatting config already set to ${targetFormattingConfig}`)
 		return
 	}
 
-	let parsedPrettier: unknown
+	let parsedFormatting: unknown
 	try {
-		parsedPrettier = parseJson(existingPrettierText, prettierConfigPath)
+		parsedFormatting = parseJson(existingFormattingText, formattingConfigPath)
 	} catch {
 		const shouldOverwrite = resolveConflictAction({
 			mode: options.conflict,
-			filePath: prettierConfigPath,
+			filePath: formattingConfigPath,
 			message: 'existing .prettierrc.json is not valid JSON'
 		})
 
@@ -76,21 +76,21 @@ export async function applyPrettierConfig(
 			return
 		}
 
-		await writeTextFileIfChanged(prettierConfigPath, targetPrettierConfigText, {
+		await writeTextFileIfChanged(formattingConfigPath, targetFormattingConfigText, {
 			dryRun: options.dryRun,
 			label: 'Overwrite .prettierrc.json'
 		})
 		return
 	}
 
-	if (parsedPrettier === targetPrettierConfig) {
-		logInfo('apply', `Prettier config already set to ${targetPrettierConfig}`)
+	if (parsedFormatting === targetFormattingConfig) {
+		logInfo('apply', `Formatting config already set to ${targetFormattingConfig}`)
 		return
 	}
 
 	const shouldOverwrite = resolveConflictAction({
 		mode: options.conflict,
-		filePath: prettierConfigPath,
+		filePath: formattingConfigPath,
 		message: 'existing .prettierrc.json differs from shared config reference'
 	})
 
@@ -98,8 +98,8 @@ export async function applyPrettierConfig(
 		return
 	}
 
-	await writeTextFileIfChanged(prettierConfigPath, targetPrettierConfigText, {
+	await writeTextFileIfChanged(formattingConfigPath, targetFormattingConfigText, {
 		dryRun: options.dryRun,
-		label: 'Apply Prettier config'
+		label: 'Apply Formatting config'
 	})
 }
