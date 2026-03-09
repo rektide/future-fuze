@@ -5,6 +5,8 @@ import { parse as parseJsonc } from 'jsonc-parser'
 
 import { logDryRun, logInfo } from './log.ts'
 
+import type { ActionStatus } from './types.ts'
+
 interface WriteFileOptions {
 	dryRun: boolean
 	label?: string
@@ -54,22 +56,24 @@ export async function writeTextFileIfChanged(
 	filePath: string,
 	nextContent: string,
 	options: WriteFileOptions
-): Promise<boolean> {
+): Promise<ActionStatus> {
 	const previousContent = await readTextFileIfExists(filePath)
+	const nextStatus: ActionStatus = previousContent === undefined ? 'created' : 'updated'
+
 	if (previousContent === nextContent) {
 		logInfo('file', `No changes needed for ${filePath}`)
-		return false
+		return 'unchanged'
 	}
 
 	if (options.dryRun) {
 		const label = options.label ?? 'Update file'
 		logDryRun(`${label}: ${filePath}`)
-		return true
+		return nextStatus
 	}
 
 	await mkdir(dirname(filePath), { recursive: true })
 	await writeFile(filePath, nextContent, 'utf8')
 	const label = options.label ?? 'Updated file'
 	logInfo('file', `${label}: ${filePath}`)
-	return true
+	return nextStatus
 }

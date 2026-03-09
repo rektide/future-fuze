@@ -6,9 +6,9 @@ import { resolveConflictAction } from '../conflict.ts'
 import { parseJson, readTextFileIfExists, stringifyJson, writeTextFileIfChanged } from '../files.ts'
 import { logInfo, logVerbose } from '../log.ts'
 
-import type { ApplyRuntimeOptions, ProjectContext } from '../types.ts'
+import type { ActionStatus, ApplyRuntimeOptions, ProjectContext } from '../types.ts'
 
-type JsonChangeStatus = 'created' | 'overwrote'
+type JsonChangeStatus = 'created' | 'updated'
 
 interface JsonChange {
 	path: string
@@ -205,7 +205,7 @@ function applyDesiredObject(
 		}
 
 		target[key] = cloneJsonValue(desiredValue)
-		addLeafChanges(changes, desiredValue, nextPath, 'overwrote')
+		addLeafChanges(changes, desiredValue, nextPath, 'updated')
 		changed = true
 	}
 
@@ -228,7 +228,7 @@ function logVerboseChanges(configName: string, changes: JsonChange[]): void {
 	}
 }
 
-export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput): Promise<void> {
+export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput): Promise<ActionStatus> {
 	const sources = await loadConfigPackageJsonSources({
 		configId: input.configName,
 		configDirectory: input.configDirectory,
@@ -237,7 +237,7 @@ export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput)
 
 	if (sources.length === 0) {
 		logInfo('apply', input.outputLabels.noSource)
-		return
+		return 'unchanged'
 	}
 
 	const packageJsonText = await readTextFileIfExists(input.project.packageJsonPath)
@@ -263,15 +263,17 @@ export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput)
 
 	if (!changed) {
 		logInfo('apply', input.outputLabels.noChange)
-		return
+		return 'unchanged'
 	}
 
 	if (input.options.verbose) {
 		logVerboseChanges(input.configName, changes)
 	}
 
-	await writeTextFileIfChanged(input.project.packageJsonPath, stringifyJson(packageJsonValue), {
+	const status = await writeTextFileIfChanged(input.project.packageJsonPath, stringifyJson(packageJsonValue), {
 		dryRun: input.options.dryRun,
 		label: input.outputLabels.updated
 	})
+
+	return status
 }

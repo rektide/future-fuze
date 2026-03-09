@@ -14,12 +14,11 @@ import {
 import { logInfo } from '../internal/log.ts'
 
 import type {
+	ActionStatus,
 	ApplyRuntimeOptions,
 	ProjectContext,
 	TsconfigProfile
 } from '../internal/types.ts'
-
-type TsconfigApplyStatus = 'created' | 'updated' | 'unchanged'
 
 const typescriptConfigDirectory = dirname(fileURLToPath(import.meta.url))
 const recursiveTypescriptConfigDirectory = join(typescriptConfigDirectory, 'recursive')
@@ -147,7 +146,7 @@ async function applyTypescriptPackageJsonConfig(
 async function applyTypescriptTsconfigFile(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
-): Promise<TsconfigApplyStatus> {
+): Promise<ActionStatus> {
 	const tsconfigTemplate = await loadTypescriptTsconfigTemplate(project, options.tsconfigProfile)
 	const tsconfigPath = join(project.projectRoot, 'tsconfig.json')
 	const existingTsconfigText = await readTextFileIfExists(tsconfigPath)
