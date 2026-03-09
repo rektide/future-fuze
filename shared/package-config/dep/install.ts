@@ -133,3 +133,10 @@ export async function ensurePackageConfigDependency(
 	await ensurePackageConfigDependencyImpl(project, options)
 	ensuredProjects.add(key)
 }
+
+export async function runPackageManagerInstall(project: ProjectContext, dryRun: boolean): Promise<void> {
+	logInfo('install', `Running ${project.packageManager} install`)
+	await runPackageManagerCommand(project.packageManager, ['install'], project.projectRoot, dryRun, {
+		cleanEnv: true
+	})
+}

@@ -10,11 +10,12 @@ import { applyConcurrentlyConfig } from './concurrently/apply.mts'
 import { applyEsmConfig } from './esm/apply.ts'
 import conflictPlugin from './gunshi/conflict.ts'
 import dryRunPlugin from './gunshi/dry-run.ts'
+import installPlugin from './gunshi/install.ts'
 import linkPlugin from './gunshi/link.ts'
 import loggingPlugin from './gunshi/logging.ts'
 import updatePlugin from './gunshi/update.ts'
 import { collectApplyTargetRoots } from './internal/targets.ts'
-import { ensurePackageConfigDependency } from './internal/install.ts'
+import { ensurePackageConfigDependency, runPackageManagerInstall } from './internal/install.ts'
 import { logInfo } from './internal/log.ts'
 import { parseApplyRuntimeOptions } from './internal/options.ts'
 import { applyEnumChoices, applyOptionDefaults } from './internal/options/schema.ts'
@@ -54,7 +55,7 @@ function resolveApplyTargets(configs: ConfigChoice[]): ApplyTargetChoice[] {
 }
 
 export function createApplyPlugins() {
-	return [updatePlugin(), dryRunPlugin(), conflictPlugin(), loggingPlugin(), linkPlugin()]
+	return [updatePlugin(), dryRunPlugin(), conflictPlugin(), loggingPlugin(), linkPlugin(), installPlugin()]
 }
 
 export const applyCommand = define({
@@ -100,6 +101,10 @@ export const applyCommand = define({
 
 			for (const applyTarget of applyTargets) {
 				await configRunners[applyTarget](project, options)
+			}
+
+			if (!options.skipInstall) {
+				await runPackageManagerInstall(project, options.dryRun)
 			}
 		}
 	}

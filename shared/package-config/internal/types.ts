@@ -36,4 +36,5 @@ export interface ApplyRuntimeOptions {
 	conflict: ConflictMode
 	tsconfigProfile: TsconfigProfile
 	link: boolean
+	skipInstall: boolean
 }

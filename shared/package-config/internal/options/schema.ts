@@ -10,13 +10,15 @@ export const applyOptionDefaults: Readonly<{
 	conflict: ConflictMode
 	tsconfigProfile: TsconfigProfile
 	link: boolean
+	skipInstall: boolean
 }> = {
 	update: false,
 	dryRun: false,
 	verbose: false,
 	conflict: defaultConflictMode,
 	tsconfigProfile: defaultTsconfigProfile,
-	link: false
+	link: false,
+	skipInstall: false
 }
 
 export const applyEnumChoices = {

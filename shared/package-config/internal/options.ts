@@ -9,6 +9,7 @@ export interface ApplyCliValues {
 	conflict?: unknown
 	tsconfigProfile?: unknown
 	link?: unknown
+	skipInstall?: unknown
 	[key: string]: unknown
 }
 
@@ -19,6 +20,7 @@ interface ApplyRawOptions {
 	conflict: unknown
 	tsconfigProfile: unknown
 	link: boolean
+	skipInstall: boolean
 }
 
 function parseBooleanFlag(value: unknown, fallback: boolean): boolean {
@@ -56,7 +58,8 @@ function coerceApplyCliValues(values: ApplyCliValues): ApplyRawOptions {
 		verbose: parseBooleanFlag(values.verbose, applyOptionDefaults.verbose),
 		conflict: values.conflict,
 		tsconfigProfile: values.tsconfigProfile,
-		link: parseBooleanFlag(values.link, applyOptionDefaults.link)
+		link: parseBooleanFlag(values.link, applyOptionDefaults.link),
+		skipInstall: parseBooleanFlag(values.skipInstall, applyOptionDefaults.skipInstall)
 	}
 }
 
@@ -75,7 +78,8 @@ export function normalizeApplyRuntimeOptions(raw: ApplyRawOptions): ApplyRuntime
 			applyEnumChoices.tsconfigProfile,
 			applyOptionDefaults.tsconfigProfile
 		) as TsconfigProfile,
-		link: raw.link
+		link: raw.link,
+		skipInstall: raw.skipInstall
 	}
 }
 
