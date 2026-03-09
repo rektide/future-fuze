@@ -4,10 +4,16 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@future-fuze/package-config': link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config
+
 importers:
 
   .:
     dependencies:
+      '@future-fuze/package-config':
+        specifier: link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config
+        version: link:../../../../.local/share/pnpm/global/5/node_modules/@future-fuze/package-config
       cdk8s:
         specifier: ^2.66.2
         version: 2.70.50(constructs@10.5.1)

@@ -27,7 +27,7 @@ function createInstallArgs(packageManager: PackageManager, packageSpec: string):
 
 function createLinkArgs(packageManager: PackageManager, packageName: string): string[] {
 	if (packageManager === 'pnpm') {
-		return ['link', '--global', packageName]
+		return ['link', packageName]
 	}
 
 	return ['link', packageName]
@@ -37,17 +37,26 @@ async function runPackageManagerCommand(
 	packageManager: PackageManager,
 	args: string[],
 	workingDirectory: string,
-	dryRun: boolean
+	dryRun: boolean,
+	options?: { cleanEnv?: boolean }
 ): Promise<void> {
 	if (dryRun) {
 		logDryRun(`${packageManager} ${args.join(' ')} (cwd: ${workingDirectory})`)
 		return
 	}
 
+	const env = options?.cleanEnv
+		? (() => {
+				const { NODE_PATH, ...rest } = process.env
+				return rest
+			})()
+		: process.env
+
 	await new Promise<void>((resolve, reject) => {
 		const child = spawn(packageManager, args, {
 			cwd: workingDirectory,
-			stdio: 'inherit'
+			stdio: 'inherit',
+			env
 		})
 
 		child.on('error', reject)
@@ -92,15 +101,17 @@ async function ensurePackageConfigDependencyImpl(
 		logInfo('install', `${packageConfigPackageName} missing, installing`)
 	}
 
-	if (options.update) {
-		logInfo('install', `${packageConfigPackageName} update requested, installing latest as devDependency`)
-	}
-
 	if (options.link) {
 		logInfo('install', `${packageConfigPackageName} linking via ${project.packageManager} link`)
 		const linkArgs = createLinkArgs(project.packageManager, packageConfigPackageName)
-		await runPackageManagerCommand(project.packageManager, linkArgs, project.projectRoot, options.dryRun)
+		await runPackageManagerCommand(project.packageManager, linkArgs, project.projectRoot, options.dryRun, {
+			cleanEnv: true
+		})
 		return
+	}
+
+	if (options.update) {
+		logInfo('install', `${packageConfigPackageName} update requested, installing latest as devDependency`)
 	}
 
 	const packageSpec = options.update
