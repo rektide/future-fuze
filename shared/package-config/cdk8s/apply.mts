@@ -1,6 +1,7 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { createPackageJsonOutputLabels } from '../internal/apply/labels.ts'
 import { applyConfigPackageJson } from '../internal/apply/package-json.ts'
 
 import type { ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
@@ -16,10 +17,6 @@ export async function applyCdk8sConfig(
 		options,
 		configName: 'cdk8s',
 		configDirectory: cdk8sConfigDirectory,
-		outputLabels: {
-			updated: 'Apply cdk8s package.json settings',
-			noChange: 'Cdk8s package.json settings are already up-to-date',
-			noSource: 'No cdk8s package.json source found'
-		}
+		outputLabels: createPackageJsonOutputLabels({ configId: 'cdk8s' })
 	})
 }

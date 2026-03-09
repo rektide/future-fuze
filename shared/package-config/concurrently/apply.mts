@@ -1,6 +1,7 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { createPackageJsonOutputLabels } from '../internal/apply/labels.ts'
 import { applyConfigPackageJson } from '../internal/apply/package-json.ts'
 
 import type { ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
@@ -16,10 +17,6 @@ export async function applyConcurrentlyConfig(
 		options,
 		configName: 'concurrently',
 		configDirectory: concurrentlyConfigDirectory,
-		outputLabels: {
-			updated: 'Apply concurrently package.json settings',
-			noChange: 'Concurrently package.json settings are already up-to-date',
-			noSource: 'No concurrently package.json source found'
-		}
+		outputLabels: createPackageJsonOutputLabels({ configId: 'concurrently' })
 	})
 }

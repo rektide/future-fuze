@@ -2,6 +2,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 
+import { createPackageJsonOutputLabels } from '../internal/apply/labels.ts'
 import { applyConfigPackageJson } from '../internal/apply/package-json.ts'
 import { tryLoadNamedObjectConfig } from '../internal/config-source.ts'
 import { resolveConflictAction } from '../internal/conflict.ts'
@@ -139,11 +140,7 @@ async function applyTypescriptPackageJsonConfig(
 		options,
 		configName: 'typescript',
 		configDirectory: typescriptConfigDirectory,
-		outputLabels: {
-			updated: 'Apply TypeScript package.json settings',
-			noChange: 'TypeScript package.json settings are already up-to-date',
-			noSource: 'No TypeScript package.json source found'
-		}
+		outputLabels: createPackageJsonOutputLabels({ configId: 'typescript' })
 	})
 }
 

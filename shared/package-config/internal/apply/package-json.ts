@@ -3,6 +3,7 @@ import { isDeepStrictEqual } from 'node:util'
 
 import { resolveConflictAction } from '../conflict.ts'
 import { parseJson, readTextFileIfExists, stringifyJson, writeTextFileIfChanged } from '../files.ts'
+import type { PackageJsonOutputLabels } from './labels.ts'
 
 import type { ApplyRuntimeOptions, ProjectContext } from '../types.ts'
 
@@ -22,11 +23,7 @@ interface ApplyConfigPackageJsonInput {
 	options: ApplyRuntimeOptions
 	configName: string
 	configDirectory: string
-	outputLabels: {
-		updated: string
-		noChange: string
-		noSource: string
-	}
+	outputLabels: PackageJsonOutputLabels
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
