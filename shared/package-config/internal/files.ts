@@ -3,6 +3,8 @@ import { dirname } from 'node:path'
 
 import { parse as parseJsonc } from 'jsonc-parser'
 
+import { logDryRun, logInfo } from './log.ts'
+
 interface WriteFileOptions {
 	dryRun: boolean
 	label?: string
@@ -55,19 +57,19 @@ export async function writeTextFileIfChanged(
 ): Promise<boolean> {
 	const previousContent = await readTextFileIfExists(filePath)
 	if (previousContent === nextContent) {
-		console.log(`No changes needed for ${filePath}`)
+		logInfo('file', `No changes needed for ${filePath}`)
 		return false
 	}
 
 	if (options.dryRun) {
 		const label = options.label ?? 'Update file'
-		console.log(`[dry-run] ${label}: ${filePath}`)
+		logDryRun(`${label}: ${filePath}`)
 		return true
 	}
 
 	await mkdir(dirname(filePath), { recursive: true })
 	await writeFile(filePath, nextContent, 'utf8')
 	const label = options.label ?? 'Updated file'
-	console.log(`${label}: ${filePath}`)
+	logInfo('file', `${label}: ${filePath}`)
 	return true
 }

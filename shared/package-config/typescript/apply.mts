@@ -12,6 +12,7 @@ import {
 	stringifyJson,
 	writeTextFileIfChanged
 } from '../internal/files.ts'
+import { logInfo } from '../internal/log.ts'
 
 import type {
 	ApplyRuntimeOptions,
@@ -181,7 +182,7 @@ async function applyTypescriptTsconfigFile(
 
 	const changed = applyTsconfigTemplate(parsedTsconfig, tsconfigTemplate, options, tsconfigPath)
 	if (!changed) {
-		console.log('TypeScript tsconfig.json is already up-to-date')
+		logInfo('apply', 'TypeScript tsconfig.json is already up-to-date')
 		return
 	}
 

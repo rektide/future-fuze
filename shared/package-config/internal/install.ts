@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process'
 
 import type { ApplyRuntimeOptions, PackageJsonData, PackageManager, ProjectContext } from './types.ts'
 import { packageConfigPackageName } from './types.ts'
+import { logDryRun, logInfo } from './log.ts'
 
 function hasPackageVersion(packageJson: PackageJsonData, packageName: string): boolean {
 	return Boolean(
@@ -31,7 +32,7 @@ async function runPackageManagerCommand(
 	dryRun: boolean
 ): Promise<void> {
 	if (dryRun) {
-		console.log(`[dry-run] ${packageManager} ${args.join(' ')} (cwd: ${workingDirectory})`)
+		logDryRun(`${packageManager} ${args.join(' ')} (cwd: ${workingDirectory})`)
 		return
 	}
 
@@ -58,7 +59,7 @@ export async function ensurePackageConfigDependency(
 	options: ApplyRuntimeOptions
 ): Promise<void> {
 	if (project.packageJson.name === packageConfigPackageName) {
-		console.log(`Skipping ${packageConfigPackageName} install in its own package workspace`)
+		logInfo('install', `Skipping ${packageConfigPackageName} install in its own package workspace`)
 		return
 	}
 
@@ -66,22 +67,23 @@ export async function ensurePackageConfigDependency(
 	const installedAsDevDependency = isInDevDependencies(project.packageJson, packageConfigPackageName)
 
 	if (!options.update && installedAsDevDependency) {
-		console.log(`${packageConfigPackageName} already in devDependencies`)
+		logInfo('install', `${packageConfigPackageName} already in devDependencies`)
 		return
 	}
 
 	if (!options.update && installedAnywhere && !installedAsDevDependency) {
-		console.log(
+		logInfo(
+			'install',
 			`${packageConfigPackageName} found outside devDependencies, reinstalling as devDependency`
 		)
 	}
 
 	if (!options.update && !installedAnywhere) {
-		console.log(`${packageConfigPackageName} missing, installing`)
+		logInfo('install', `${packageConfigPackageName} missing, installing`)
 	}
 
 	if (options.update) {
-		console.log(`${packageConfigPackageName} update requested, installing latest as devDependency`)
+		logInfo('install', `${packageConfigPackageName} update requested, installing latest as devDependency`)
 	}
 
 	const packageSpec = options.update

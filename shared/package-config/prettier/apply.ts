@@ -2,6 +2,7 @@ import { join } from 'node:path'
 
 import { resolveConflictAction } from '../internal/conflict.ts'
 import { parseJson, readTextFileIfExists, writeTextFileIfChanged } from '../internal/files.ts'
+import { logInfo } from '../internal/log.ts'
 import type { ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
 
 const targetPrettierConfig = '@future-fuze/package-config/prettier'
@@ -23,7 +24,7 @@ export async function applyPrettierConfig(
 	}
 
 	if (existingPrettierText.trim() === targetPrettierConfigText.trim()) {
-		console.log(`Prettier config already set to ${targetPrettierConfig}`)
+		logInfo('apply', `Prettier config already set to ${targetPrettierConfig}`)
 		return
 	}
 
@@ -49,7 +50,7 @@ export async function applyPrettierConfig(
 	}
 
 	if (parsedPrettier === targetPrettierConfig) {
-		console.log(`Prettier config already set to ${targetPrettierConfig}`)
+		logInfo('apply', `Prettier config already set to ${targetPrettierConfig}`)
 		return
 	}
 

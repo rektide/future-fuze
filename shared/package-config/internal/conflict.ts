@@ -1,4 +1,5 @@
 import { conflictModes, defaultConflictMode, type ConflictMode } from './types.ts'
+import { logInfo } from './log.ts'
 
 interface ConflictInput {
 	mode: ConflictMode
@@ -10,12 +11,12 @@ const nonErrorConflictModes = conflictModes.filter(mode => mode !== defaultConfl
 
 export function resolveConflictAction(input: ConflictInput): boolean {
 	if (input.mode === 'overwrite') {
-		console.log(`Conflict resolved by overwrite for ${input.filePath}: ${input.message}`)
+		logInfo('conflict', `Conflict resolved by overwrite for ${input.filePath}: ${input.message}`)
 		return true
 	}
 
 	if (input.mode === 'skip') {
-		console.log(`Conflict skipped for ${input.filePath}: ${input.message}`)
+		logInfo('conflict', `Conflict skipped for ${input.filePath}: ${input.message}`)
 		return false
 	}
 

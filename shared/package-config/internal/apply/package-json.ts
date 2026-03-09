@@ -4,6 +4,7 @@ import { loadConfigPackageJsonSources, type ConfigPackageJsonSource } from './co
 import type { PackageJsonOutputLabels } from './labels.ts'
 import { resolveConflictAction } from '../conflict.ts'
 import { parseJson, readTextFileIfExists, stringifyJson, writeTextFileIfChanged } from '../files.ts'
+import { logInfo, logVerbose } from '../log.ts'
 
 import type { ApplyRuntimeOptions, ProjectContext } from '../types.ts'
 
@@ -223,7 +224,7 @@ function composeDesiredPackageJson(sources: ConfigPackageJsonSource[]): Record<s
 
 function logVerboseChanges(configName: string, changes: JsonChange[]): void {
 	for (const change of changes) {
-		console.log(`[verbose] [${configName}] ${change.status}: ${change.path}`)
+		logVerbose(configName, `${change.status}: ${change.path}`)
 	}
 }
 
@@ -235,7 +236,7 @@ export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput)
 	})
 
 	if (sources.length === 0) {
-		console.log(input.outputLabels.noSource)
+		logInfo('apply', input.outputLabels.noSource)
 		return
 	}
 
@@ -261,7 +262,7 @@ export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput)
 	)
 
 	if (!changed) {
-		console.log(input.outputLabels.noChange)
+		logInfo('apply', input.outputLabels.noChange)
 		return
 	}
 

@@ -14,6 +14,7 @@ import loggingPlugin from './gunshi/logging.ts'
 import updatePlugin from './gunshi/update.ts'
 import { collectApplyTargetRoots } from './internal/targets.ts'
 import { ensurePackageConfigDependency } from './internal/install.ts'
+import { logInfo } from './internal/log.ts'
 import { parseApplyRuntimeOptions } from './internal/options.ts'
 import { loadProjectContext } from './internal/project.ts'
 import { applyPrettierConfig } from './prettier/apply.ts'
@@ -90,7 +91,7 @@ export const applyCommand = define({
 		for (const applyProjectRoot of applyProjectRoots) {
 			const project = await loadProjectContext(applyProjectRoot, baseProject.packageManager)
 			if (ctx.values.recursive === true) {
-				console.log(`Applying configs in ${project.projectRoot}`)
+				logInfo('apply', `Applying configs in ${project.projectRoot}`)
 			}
 
 			await ensurePackageConfigDependency(project, options)
