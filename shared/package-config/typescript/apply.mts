@@ -11,10 +11,10 @@ import {
 	stringifyJson,
 	writeTextFileIfChanged
 } from '../internal/files.ts'
-import { logInfo } from '../internal/log.ts'
 
 import type {
 	ActionStatus,
+	ApplyActionResult,
 	ApplyRuntimeOptions,
 	ProjectContext,
 	TsconfigProfile
@@ -136,27 +136,35 @@ function applyTsconfigTemplate(
 	return changed
 }
 
+interface TypescriptTsconfigPlan {
+	tsconfigPath: string
+	status: ActionStatus
+	nextContent?: string
+	writeLabel?: string
+}
+
 async function applyTypescriptPackageJsonConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
-): Promise<void> {
-	await runTypescriptPackageJson(project, options)
+): Promise<ApplyActionResult> {
+	return await runTypescriptPackageJson(project, options)
 }
 
-async function applyTypescriptTsconfigFile(
+async function planTypescriptTsconfigFile(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
-): Promise<ActionStatus> {
+): Promise<TypescriptTsconfigPlan> {
 	const tsconfigTemplate = await loadTypescriptTsconfigTemplate(project, options.tsconfigProfile)
 	const tsconfigPath = join(project.projectRoot, 'tsconfig.json')
 	const existingTsconfigText = await readTextFileIfExists(tsconfigPath)
 
 	if (!existingTsconfigText) {
-		await writeTextFileIfChanged(tsconfigPath, stringifyJson(tsconfigTemplate), {
-			dryRun: options.dryRun,
-			label: 'Create tsconfig.json'
-		})
-		return 'created'
+		return {
+			tsconfigPath,
+			status: 'created',
+			nextContent: stringifyJson(tsconfigTemplate),
+			writeLabel: 'Create tsconfig.json'
+		}
 	}
 
 	const parsedTsconfig = parseJsonWithComments(existingTsconfigText, tsconfigPath)
@@ -168,36 +176,67 @@ async function applyTypescriptTsconfigFile(
 		})
 
 		if (!shouldOverwrite) {
-			logInfo('apply', 'TypeScript tsconfig.json is already up-to-date')
-			return 'unchanged'
+			return {
+				tsconfigPath,
+				status: 'unchanged'
+			}
 		}
 
-		await writeTextFileIfChanged(tsconfigPath, stringifyJson(tsconfigTemplate), {
-			dryRun: options.dryRun,
-			label: 'Overwrite tsconfig.json'
-		})
-		return 'updated'
+		return {
+			tsconfigPath,
+			status: 'updated',
+			nextContent: stringifyJson(tsconfigTemplate),
+			writeLabel: 'Overwrite tsconfig.json'
+		}
 	}
 
 	const changed = applyTsconfigTemplate(parsedTsconfig, tsconfigTemplate, options, tsconfigPath)
 	if (!changed) {
-		logInfo('apply', 'TypeScript tsconfig.json is already up-to-date')
-		return 'unchanged'
+		return {
+			tsconfigPath,
+			status: 'unchanged'
+		}
 	}
 
-	await writeTextFileIfChanged(tsconfigPath, stringifyJson(parsedTsconfig), {
+	return {
+		tsconfigPath,
+		status: 'updated',
+		nextContent: stringifyJson(parsedTsconfig),
+		writeLabel: 'Apply TypeScript config'
+	}
+}
+
+async function applyPlannedTypescriptTsconfigFile(
+	plan: TypescriptTsconfigPlan,
+	options: ApplyRuntimeOptions
+): Promise<ApplyActionResult> {
+	if (!plan.nextContent) {
+		return {
+			configId: 'tsconfig',
+			actionId: 'tsconfig-file',
+			status: 'unchanged'
+		}
+	}
+
+	const status = await writeTextFileIfChanged(plan.tsconfigPath, plan.nextContent, {
 		dryRun: options.dryRun,
-		label: 'Apply TypeScript config'
+		label: plan.writeLabel
 	})
 
-	return 'updated'
+	return {
+		configId: 'tsconfig',
+		actionId: 'tsconfig-file',
+		status
+	}
 }
 
 export async function applyTypescriptConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
-): Promise<void> {
-	await applyTypescriptPackageJsonConfig(project, options)
-	const status = await applyTypescriptTsconfigFile(project, options)
-	logInfo('apply', `TypeScript tsconfig action status: ${status}`)
+): Promise<ApplyActionResult[]> {
+	const packageJsonResult = await applyTypescriptPackageJsonConfig(project, options)
+	const plan = await planTypescriptTsconfigFile(project, options)
+	const tsconfigResult = await applyPlannedTypescriptTsconfigFile(plan, options)
+
+	return [packageJsonResult, tsconfigResult]
 }

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 
 import { createPackageJsonConfigRunner } from '../internal/apply/config-runner.ts'
 
-import type { ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
+import type { ApplyActionResult, ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
 
 const esmConfigDirectory = dirname(fileURLToPath(import.meta.url))
 const runEsmPackageJson = createPackageJsonConfigRunner({
@@ -14,6 +14,6 @@ const runEsmPackageJson = createPackageJsonConfigRunner({
 export async function applyEsmConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
-): Promise<void> {
-	await runEsmPackageJson(project, options)
+): Promise<ApplyActionResult[]> {
+	return [await runEsmPackageJson(project, options)]
 }

@@ -4,7 +4,7 @@ import { loadConfigPackageJsonSources, type ConfigPackageJsonSource } from './co
 import type { PackageJsonOutputLabels } from './labels.ts'
 import { resolveConflictAction } from '../conflict.ts'
 import { parseJson, readTextFileIfExists, stringifyJson, writeTextFileIfChanged } from '../files.ts'
-import { logInfo, logVerbose } from '../log.ts'
+import { logVerbose } from '../log.ts'
 
 import type { ActionStatus, ApplyRuntimeOptions, ProjectContext } from '../types.ts'
 
@@ -21,6 +21,15 @@ interface ApplyConfigPackageJsonInput {
 	configName: string
 	configDirectory: string
 	outputLabels: PackageJsonOutputLabels
+}
+
+interface PackageJsonPlan {
+	packageJsonPath: string
+	status: ActionStatus
+	nextContent?: string
+	writeLabel?: string
+	changes: JsonChange[]
+	configName: string
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -128,7 +137,7 @@ function mergeSourceObject(
 	return target
 }
 
-function applyArrayValue(
+function planArrayValue(
 	targetArray: unknown[],
 	desiredArray: unknown[],
 	path: string,
@@ -149,7 +158,7 @@ function applyArrayValue(
 	return changed
 }
 
-function applyDesiredObject(
+function planDesiredObject(
 	target: Record<string, unknown>,
 	desired: Record<string, unknown>,
 	options: ApplyRuntimeOptions,
@@ -173,7 +182,7 @@ function applyDesiredObject(
 
 		if (isRecord(existingValue) && isRecord(desiredValue)) {
 			changed =
-				applyDesiredObject(
+				planDesiredObject(
 					existingValue,
 					desiredValue,
 					options,
@@ -186,7 +195,7 @@ function applyDesiredObject(
 		}
 
 		if (Array.isArray(existingValue) && Array.isArray(desiredValue)) {
-			changed = applyArrayValue(existingValue, desiredValue, nextPath, changes) || changed
+			changed = planArrayValue(existingValue, desiredValue, nextPath, changes) || changed
 			continue
 		}
 
@@ -228,7 +237,7 @@ function logVerboseChanges(configName: string, changes: JsonChange[]): void {
 	}
 }
 
-export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput): Promise<ActionStatus> {
+export async function planConfigPackageJson(input: ApplyConfigPackageJsonInput): Promise<PackageJsonPlan> {
 	const sources = await loadConfigPackageJsonSources({
 		configId: input.configName,
 		configDirectory: input.configDirectory,
@@ -236,8 +245,12 @@ export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput)
 	})
 
 	if (sources.length === 0) {
-		logInfo('apply', input.outputLabels.noSource)
-		return 'unchanged'
+		return {
+			packageJsonPath: input.project.packageJsonPath,
+			status: 'unchanged',
+			changes: [],
+			configName: input.configName
+		}
 	}
 
 	const packageJsonText = await readTextFileIfExists(input.project.packageJsonPath)
@@ -252,7 +265,7 @@ export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput)
 
 	const desiredPackageJson = composeDesiredPackageJson(sources)
 	const changes: JsonChange[] = []
-	const changed = applyDesiredObject(
+	const changed = planDesiredObject(
 		packageJsonValue,
 		desiredPackageJson,
 		input.options,
@@ -262,18 +275,45 @@ export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput)
 	)
 
 	if (!changed) {
-		logInfo('apply', input.outputLabels.noChange)
+		return {
+			packageJsonPath: input.project.packageJsonPath,
+			status: 'unchanged',
+			changes: [],
+			configName: input.configName
+		}
+	}
+
+	return {
+		packageJsonPath: input.project.packageJsonPath,
+		status: 'updated',
+		nextContent: stringifyJson(packageJsonValue),
+		writeLabel: input.outputLabels.updated,
+		changes,
+		configName: input.configName
+	}
+}
+
+export async function applyPlannedConfigPackageJson(
+	plan: PackageJsonPlan,
+	options: ApplyRuntimeOptions
+): Promise<ActionStatus> {
+	if (!plan.nextContent) {
 		return 'unchanged'
 	}
 
-	if (input.options.verbose) {
-		logVerboseChanges(input.configName, changes)
+	if (options.verbose) {
+		logVerboseChanges(plan.configName, plan.changes)
 	}
 
-	const status = await writeTextFileIfChanged(input.project.packageJsonPath, stringifyJson(packageJsonValue), {
-		dryRun: input.options.dryRun,
-		label: input.outputLabels.updated
+	const status = await writeTextFileIfChanged(plan.packageJsonPath, plan.nextContent, {
+		dryRun: options.dryRun,
+		label: plan.writeLabel
 	})
 
 	return status
+}
+
+export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput): Promise<ActionStatus> {
+	const plan = await planConfigPackageJson(input)
+	return applyPlannedConfigPackageJson(plan, input.options)
 }

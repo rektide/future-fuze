@@ -7,6 +7,12 @@ export type MonorepoManager = 'pnpm' | 'npm'
 export type ActionStatus = 'created' | 'updated' | 'unchanged'
 export type LogFormat = 'bracket' | 'kv'
 
+export interface ApplyActionResult {
+	configId: string
+	actionId: string
+	status: ActionStatus
+}
+
 export type ConflictMode = (typeof conflictModes)[number]
 export const defaultConflictMode: ConflictMode = 'error'
 export type TsconfigProfile = 'base' | 'cdk8s'

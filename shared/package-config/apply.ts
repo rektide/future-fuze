@@ -25,19 +25,32 @@ import { applyFormattingConfig, runOxfmtAfterInstall } from './formatting/apply.
 import { applyTypescriptConfig } from './typescript/apply.mts'
 import { applyVitestConfig } from './vitest/apply.mts'
 
+import type { ApplyActionResult, ApplyRuntimeOptions, ProjectContext } from './internal/types.ts'
+
 const applyTargetChoices = ['tsconfig', 'formatting', 'concurrently', 'cdk8s', 'vitest', 'esm'] as const
 type ApplyTargetChoice = (typeof applyTargetChoices)[number]
 
 const configChoices = ['all', ...applyTargetChoices] as const
 type ConfigChoice = (typeof configChoices)[number]
 
-const configRunners: Record<ApplyTargetChoice, typeof applyTypescriptConfig> = {
+type ConfigApplyRunner = (
+	project: ProjectContext,
+	options: ApplyRuntimeOptions
+) => Promise<ApplyActionResult[]>
+
+const configRunners: Record<ApplyTargetChoice, ConfigApplyRunner> = {
 	tsconfig: applyTypescriptConfig,
 	formatting: applyFormattingConfig,
 	concurrently: applyConcurrentlyConfig,
 	cdk8s: applyCdk8sConfig,
 	vitest: applyVitestConfig,
 	esm: applyEsmConfig
+}
+
+function logActionResults(results: ApplyActionResult[]): void {
+	for (const result of results) {
+		logInfo('apply', `${result.configId}.${result.actionId} status=${result.status}`)
+	}
 }
 
 function resolveApplyTargets(configs: ConfigChoice[]): ApplyTargetChoice[] {
@@ -102,7 +115,8 @@ export const applyCommand = define({
 			await ensurePackageConfigDependency(project, options)
 
 			for (const applyTarget of applyTargets) {
-				await configRunners[applyTarget](project, options)
+				const results = await configRunners[applyTarget](project, options)
+				logActionResults(results)
 			}
 
 			if (!options.skipInstall) {

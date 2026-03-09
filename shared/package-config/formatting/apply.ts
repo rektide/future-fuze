@@ -6,7 +6,7 @@ import { createPackageJsonConfigRunner } from '../internal/apply/config-runner.t
 import { resolveConflictAction } from '../internal/conflict.ts'
 import { parseJson, readTextFileIfExists, writeTextFileIfChanged } from '../internal/files.ts'
 import { logDryRun, logInfo } from '../internal/log.ts'
-import type { ActionStatus, ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
+import type { ActionStatus, ApplyActionResult, ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
 
 const targetFormattingConfig = '@future-fuze/package-config/formatting'
 const targetFormattingConfigText = `"${targetFormattingConfig}"\n`
@@ -52,8 +52,8 @@ export async function runOxfmtAfterInstall(project: ProjectContext, options: App
 export async function applyFormattingConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
-): Promise<void> {
-	await runFormattingPackageJson(project, options)
+): Promise<ApplyActionResult[]> {
+	const packageJsonResult = await runFormattingPackageJson(project, options)
 
 	const formattingConfigPath = join(project.projectRoot, '.prettierrc.json')
 	const existingFormattingText = await readTextFileIfExists(formattingConfigPath)
@@ -64,14 +64,12 @@ export async function applyFormattingConfig(
 			dryRun: options.dryRun,
 			label: 'Create .prettierrc.json'
 		})
-		logInfo('apply', `Formatting .prettierrc.json action status: ${status}`)
-		return
+		return [packageJsonResult, { configId: 'formatting', actionId: 'prettierrc', status }]
 	}
 
 	if (existingFormattingText.trim() === targetFormattingConfigText.trim()) {
 		status = 'unchanged'
-		logInfo('apply', `Formatting .prettierrc.json action status: ${status}`)
-		return
+		return [packageJsonResult, { configId: 'formatting', actionId: 'prettierrc', status }]
 	}
 
 	let parsedFormatting: unknown
@@ -85,22 +83,19 @@ export async function applyFormattingConfig(
 		})
 
 		if (!shouldOverwrite) {
-			logInfo('apply', `Formatting .prettierrc.json action status: ${status}`)
-			return
+			return [packageJsonResult, { configId: 'formatting', actionId: 'prettierrc', status }]
 		}
 
 		status = await writeTextFileIfChanged(formattingConfigPath, targetFormattingConfigText, {
 			dryRun: options.dryRun,
 			label: 'Overwrite .prettierrc.json'
 		})
-		logInfo('apply', `Formatting .prettierrc.json action status: ${status}`)
-		return
+		return [packageJsonResult, { configId: 'formatting', actionId: 'prettierrc', status }]
 	}
 
 	if (parsedFormatting === targetFormattingConfig) {
 		status = 'unchanged'
-		logInfo('apply', `Formatting .prettierrc.json action status: ${status}`)
-		return
+		return [packageJsonResult, { configId: 'formatting', actionId: 'prettierrc', status }]
 	}
 
 	const shouldOverwrite = resolveConflictAction({
@@ -110,8 +105,7 @@ export async function applyFormattingConfig(
 	})
 
 	if (!shouldOverwrite) {
-		logInfo('apply', `Formatting .prettierrc.json action status: ${status}`)
-		return
+		return [packageJsonResult, { configId: 'formatting', actionId: 'prettierrc', status }]
 	}
 
 	status = await writeTextFileIfChanged(formattingConfigPath, targetFormattingConfigText, {
@@ -119,5 +113,5 @@ export async function applyFormattingConfig(
 		label: 'Apply Formatting config'
 	})
 
-	logInfo('apply', `Formatting .prettierrc.json action status: ${status}`)
+	return [packageJsonResult, { configId: 'formatting', actionId: 'prettierrc', status }]
 }

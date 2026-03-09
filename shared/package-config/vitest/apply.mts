@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 
 import { createPackageJsonConfigRunner } from '../internal/apply/config-runner.ts'
 
-import type { ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
+import type { ApplyActionResult, ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
 
 const vitestConfigDirectory = dirname(fileURLToPath(import.meta.url))
 const runVitestPackageJson = createPackageJsonConfigRunner({
@@ -14,6 +14,6 @@ const runVitestPackageJson = createPackageJsonConfigRunner({
 export async function applyVitestConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
-): Promise<void> {
-	await runVitestPackageJson(project, options)
+): Promise<ApplyActionResult[]> {
+	return [await runVitestPackageJson(project, options)]
 }

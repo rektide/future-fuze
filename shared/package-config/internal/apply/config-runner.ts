@@ -1,30 +1,66 @@
-import { applyConfigPackageJson } from './package-json.ts'
-import { createPackageJsonOutputLabels } from './labels.ts'
-import { logInfo } from '../log.ts'
-
-import type { ActionStatus, ApplyRuntimeOptions, ProjectContext } from '../types.ts'
+import {
+	 applyConfigPackageJson,
++ planConfigPackageJson,
++ applyPlannedConfigPackageJson,
++ type ApplyActionResult,
++ type ApplyRuntimeOptions,
++ type PackageJsonOutputLabels,
++ type ProjectContext
+} from '../internal/apply/package-json.ts'
+import type { PackageJsonOutputLabels } from './labels.ts'
 
 interface PackageJsonConfigRunnerInput {
 	configId: string
 	configDirectory: string
 }
 
-export function createPackageJsonConfigRunner(input: PackageJsonConfigRunnerInput) {
-	const outputLabels = createPackageJsonOutputLabels({ configId: input.configId })
+export interface PackageJsonConfigRunner {
+	 plan: (
+	 project: ProjectContext,
+        options: ApplyRuntimeOptions
+    ) => Promise<PackageJsonPlan>
+  apply: (
+        plan: PackageJsonPlan,
+        options: ApplyRuntimeOptions
+    ) => Promise<ActionStatus>
+}
 
-	return async function runPackageJsonConfig(
-		project: ProjectContext,
-		options: ApplyRuntimeOptions
-	): Promise<ActionStatus> {
-		const status = await applyConfigPackageJson({
-			project,
-			options,
-			configName: input.configId,
-			configDirectory: input.configDirectory,
-			outputLabels
-		})
+export function createPackageJsonConfigRunner(input: PackageJsonConfigRunnerInput): PackageJsonConfigRunner {
+  const outputLabels = createPackageJsonOutputLabels({ configId: input.configId })
 
-		logInfo('apply', `${input.configId} package.json action status: ${status}`)
-		return status
-	}
+  return {
+    plan: async function planPackageJsonConfig(
+      project: ProjectContext,
+      options: ApplyRuntimeOptions
+    ): Promise<PackageJsonPlan> {
+      return planConfigPackageJson({
+        project,
+        options,
+        configName: input.configId,
+        configDirectory: input.configDirectory,
+        outputLabels
+      })
+    },
+
+    apply: async function applyPackageJsonConfig(
+      plan: PackageJsonPlan,
+      options: ApplyRuntimeOptions
+    ): Promise<ActionStatus> {
+      return applyPlannedConfigPackageJson(plan, options)
+    },
+
+    run: async function runPackageJsonConfig(
+      project: ProjectContext,
+      options: ApplyRuntimeOptions
+    ): Promise<ApplyActionResult> {
+      const plan = await this.plan(project, options)
+      const status = await this.apply(plan, options)
+
+      return {
+        configId: input.configId,
+        actionId: 'package-json',
+        status
+      }
+    }
+  }
 }

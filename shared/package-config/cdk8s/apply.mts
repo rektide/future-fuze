@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 
 import { createPackageJsonConfigRunner } from '../internal/apply/config-runner.ts'
 
-import type { ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
+import type { ApplyActionResult, ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
 
 const cdk8sConfigDirectory = dirname(fileURLToPath(import.meta.url))
 const runCdk8sPackageJson = createPackageJsonConfigRunner({
@@ -14,6 +14,6 @@ const runCdk8sPackageJson = createPackageJsonConfigRunner({
 export async function applyCdk8sConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
-): Promise<void> {
-	await runCdk8sPackageJson(project, options)
+): Promise<ApplyActionResult[]> {
+	return [await runCdk8sPackageJson(project, options)]
 }
