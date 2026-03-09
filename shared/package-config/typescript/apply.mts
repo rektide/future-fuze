@@ -19,6 +19,8 @@ import type {
 	TsconfigProfile
 } from '../internal/types.ts'
 
+type TsconfigApplyStatus = 'created' | 'updated' | 'unchanged'
+
 const typescriptConfigDirectory = dirname(fileURLToPath(import.meta.url))
 const recursiveTypescriptConfigDirectory = join(typescriptConfigDirectory, 'recursive')
 const runTypescriptPackageJson = createPackageJsonConfigRunner({
@@ -145,7 +147,7 @@ async function applyTypescriptPackageJsonConfig(
 async function applyTypescriptTsconfigFile(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
-): Promise<void> {
+): Promise<TsconfigApplyStatus> {
 	const tsconfigTemplate = await loadTypescriptTsconfigTemplate(project, options.tsconfigProfile)
 	const tsconfigPath = join(project.projectRoot, 'tsconfig.json')
 	const existingTsconfigText = await readTextFileIfExists(tsconfigPath)
@@ -155,7 +157,7 @@ async function applyTypescriptTsconfigFile(
 			dryRun: options.dryRun,
 			label: 'Create tsconfig.json'
 		})
-		return
+		return 'created'
 	}
 
 	const parsedTsconfig = parseJsonWithComments(existingTsconfigText, tsconfigPath)
@@ -167,26 +169,29 @@ async function applyTypescriptTsconfigFile(
 		})
 
 		if (!shouldOverwrite) {
-			return
+			logInfo('apply', 'TypeScript tsconfig.json is already up-to-date')
+			return 'unchanged'
 		}
 
 		await writeTextFileIfChanged(tsconfigPath, stringifyJson(tsconfigTemplate), {
 			dryRun: options.dryRun,
 			label: 'Overwrite tsconfig.json'
 		})
-		return
+		return 'updated'
 	}
 
 	const changed = applyTsconfigTemplate(parsedTsconfig, tsconfigTemplate, options, tsconfigPath)
 	if (!changed) {
 		logInfo('apply', 'TypeScript tsconfig.json is already up-to-date')
-		return
+		return 'unchanged'
 	}
 
 	await writeTextFileIfChanged(tsconfigPath, stringifyJson(parsedTsconfig), {
 		dryRun: options.dryRun,
 		label: 'Apply TypeScript config'
 	})
+
+	return 'updated'
 }
 
 export async function applyTypescriptConfig(
@@ -194,5 +199,6 @@ export async function applyTypescriptConfig(
 	options: ApplyRuntimeOptions
 ): Promise<void> {
 	await applyTypescriptPackageJsonConfig(project, options)
-	await applyTypescriptTsconfigFile(project, options)
+	const status = await applyTypescriptTsconfigFile(project, options)
+	logInfo('apply', `TypeScript tsconfig action status: ${status}`)
 }
