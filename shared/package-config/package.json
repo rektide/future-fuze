@@ -3,8 +3,7 @@
 	"version": "0.0.2",
 	"type": "module",
 	"bin": {
-		"package-config": "./index.ts",
-		"package-config-apply": "./apply.ts"
+		"ff-package-config": "./index.ts"
 	},
 	"scripts": {
 		"test:tsgo": "tsgo",
