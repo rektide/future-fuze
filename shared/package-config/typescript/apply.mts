@@ -2,8 +2,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 
-import { createPackageJsonOutputLabels } from '../internal/apply/labels.ts'
-import { applyConfigPackageJson } from '../internal/apply/package-json.ts'
+import { createPackageJsonConfigRunner } from '../internal/apply/config-runner.ts'
 import { tryLoadNamedObjectConfig } from '../internal/config-source.ts'
 import { resolveConflictAction } from '../internal/conflict.ts'
 import {
@@ -22,6 +21,10 @@ import type {
 
 const typescriptConfigDirectory = dirname(fileURLToPath(import.meta.url))
 const recursiveTypescriptConfigDirectory = join(typescriptConfigDirectory, 'recursive')
+const runTypescriptPackageJson = createPackageJsonConfigRunner({
+	configId: 'typescript',
+	configDirectory: typescriptConfigDirectory
+})
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -136,13 +139,7 @@ async function applyTypescriptPackageJsonConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
 ): Promise<void> {
-	await applyConfigPackageJson({
-		project,
-		options,
-		configName: 'typescript',
-		configDirectory: typescriptConfigDirectory,
-		outputLabels: createPackageJsonOutputLabels({ configId: 'typescript' })
-	})
+	await runTypescriptPackageJson(project, options)
 }
 
 async function applyTypescriptTsconfigFile(
