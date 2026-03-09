@@ -35,4 +35,5 @@ export interface ApplyRuntimeOptions {
 	verbose: boolean
 	conflict: ConflictMode
 	tsconfigProfile: TsconfigProfile
+	link: boolean
 }

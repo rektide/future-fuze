@@ -10,6 +10,7 @@ import { applyConcurrentlyConfig } from './concurrently/apply.mts'
 import { applyEsmConfig } from './esm/apply.ts'
 import conflictPlugin from './gunshi/conflict.ts'
 import dryRunPlugin from './gunshi/dry-run.ts'
+import linkPlugin from './gunshi/link.ts'
 import loggingPlugin from './gunshi/logging.ts'
 import updatePlugin from './gunshi/update.ts'
 import { collectApplyTargetRoots } from './internal/targets.ts'
@@ -53,7 +54,7 @@ function resolveApplyTargets(configs: ConfigChoice[]): ApplyTargetChoice[] {
 }
 
 export function createApplyPlugins() {
-	return [updatePlugin(), dryRunPlugin(), conflictPlugin(), loggingPlugin()]
+	return [updatePlugin(), dryRunPlugin(), conflictPlugin(), loggingPlugin(), linkPlugin()]
 }
 
 export const applyCommand = define({
