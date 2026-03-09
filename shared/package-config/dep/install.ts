@@ -137,13 +137,24 @@ async function ensurePackageConfigDependencyImpl(
 	}
 
 	if (options.link) {
-		logInfo('install', `${packageConfigPackageName} linking via ${project.packageManager} link`)
-		const linkArgs = createLinkArgs(project.packageManager, packageConfigPackageName)
-		await runPackageManagerCommand(project.packageManager, linkArgs, project.projectRoot, options.dryRun, {
-			cleanEnv: true
-		})
-		return
-	}
+        logInfo('install', `${packageConfigPackageName} linking via ${project.packageManager} link`)
+        const linkArgs = createLinkArgs(project.packageManager, packageConfigPackageName)
+        await runPackageManagerCommand(project.packageManager, linkArgs, project.projectRoot, options.dryRun, {
+            cleanEnv: true
+        })
+        return
+    }
+
+    if (options.update) {
+        logInfo('install', `${packageConfigPackageName} update requested, installing latest as devDependency`)
+    }
+
+    const packageSpec = options.update
+        ? `${packageConfigPackageName}@latest`
+        : packageConfigPackageName
+    const args = createInstallArgs(project.packageManager, packageSpec)
+    await runPackageManagerCommand(project.packageManager, args, project.projectRoot, options.dryRun)
+}
 
 	if (options.update) {
 		logInfo('install', `${packageConfigPackageName} update requested, installing latest as devDependency`)
