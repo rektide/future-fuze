@@ -27,6 +27,8 @@ function createOptions(overrides: Partial<ApplyRuntimeOptions> = {}): ApplyRunti
 		verbose: false,
 		conflict: 'error',
 		tsconfigProfile: 'base',
+		link: false,
+		skipInstall: false,
 		...overrides
 	}
 }

@@ -20,7 +20,7 @@ import { logInfo } from './internal/log.ts'
 import { parseApplyRuntimeOptions } from './internal/options.ts'
 import { applyEnumChoices, applyOptionDefaults } from './internal/options/schema.ts'
 import { loadProjectContext } from './internal/project.ts'
-import { applyPrettierConfig } from './prettier/apply.ts'
+import { applyPrettierConfig, runOxfmtAfterInstall } from './prettier/apply.ts'
 import { applyTypescriptConfig } from './typescript/apply.mts'
 import { applyVitestConfig } from './vitest/apply.mts'
 
@@ -105,6 +105,7 @@ export const applyCommand = define({
 
 			if (!options.skipInstall) {
 				await runPackageManagerInstall(project, options.dryRun)
+				await runOxfmtAfterInstall(project, options)
 			}
 		}
 	}

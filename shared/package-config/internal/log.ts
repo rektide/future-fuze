@@ -1,4 +1,4 @@
-type LogScope = 'apply' | 'conflict' | 'file' | 'install'
+type LogScope = 'apply' | 'conflict' | 'file' | 'fmt' | 'install'
 
 export function logInfo(scope: LogScope, message: string): void {
 	console.log(`[${scope}] ${message}`)
