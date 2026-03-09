@@ -1,9 +1,9 @@
-import { join } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 
+import { loadConfigPackageJsonSources, type ConfigPackageJsonSource } from './config-source.ts'
+import type { PackageJsonOutputLabels } from './labels.ts'
 import { resolveConflictAction } from '../conflict.ts'
 import { parseJson, readTextFileIfExists, stringifyJson, writeTextFileIfChanged } from '../files.ts'
-import type { PackageJsonOutputLabels } from './labels.ts'
 
 import type { ApplyRuntimeOptions, ProjectContext } from '../types.ts'
 
@@ -12,10 +12,6 @@ type JsonChangeStatus = 'created' | 'overwrote'
 interface JsonChange {
 	path: string
 	status: JsonChangeStatus
-}
-
-interface ConfigPackageJsonSource {
-	value: Record<string, unknown>
 }
 
 interface ApplyConfigPackageJsonInput {
@@ -215,50 +211,6 @@ function applyDesiredObject(
 	return changed
 }
 
-async function loadConfigSource(path: string, configName: string) {
-	const sourceText = await readTextFileIfExists(path)
-	if (sourceText === undefined) {
-		return undefined
-	}
-
-	if (sourceText.trim() === '') {
-		throw new Error(`${path} is empty; ${configName} source package.json must not be empty`)
-	}
-
-	const sourceValue = parseJson(sourceText, path)
-	if (!isRecord(sourceValue)) {
-		throw new Error(`${path} must have an object as its package.json root`)
-	}
-
-	return {
-		value: sourceValue
-	} satisfies ConfigPackageJsonSource
-}
-
-async function loadConfigSources(
-	configName: string,
-	configDirectory: string,
-	isMonorepoRoot: boolean
-): Promise<ConfigPackageJsonSource[]> {
-	const baseSourcePath = join(configDirectory, 'package.json')
-	const recursiveSourcePath = join(configDirectory, 'recursive', 'package.json')
-
-	const sources: ConfigPackageJsonSource[] = []
-	const baseSource = await loadConfigSource(baseSourcePath, configName)
-	if (baseSource !== undefined) {
-		sources.push(baseSource)
-	}
-
-	if (isMonorepoRoot) {
-		const recursiveSource = await loadConfigSource(recursiveSourcePath, configName)
-		if (recursiveSource !== undefined) {
-			sources.push(recursiveSource)
-		}
-	}
-
-	return sources
-}
-
 function composeDesiredPackageJson(sources: ConfigPackageJsonSource[]): Record<string, unknown> {
 	const desiredPackageJson: Record<string, unknown> = {}
 
@@ -276,11 +228,11 @@ function logVerboseChanges(configName: string, changes: JsonChange[]): void {
 }
 
 export async function applyConfigPackageJson(input: ApplyConfigPackageJsonInput): Promise<void> {
-	const sources = await loadConfigSources(
-		input.configName,
-		input.configDirectory,
-		input.project.isMonorepoRoot
-	)
+	const sources = await loadConfigPackageJsonSources({
+		configId: input.configName,
+		configDirectory: input.configDirectory,
+		isMonorepoRoot: input.project.isMonorepoRoot
+	})
 
 	if (sources.length === 0) {
 		console.log(input.outputLabels.noSource)
