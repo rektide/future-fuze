@@ -1,6 +1,8 @@
 import { spawn } from 'node:child_process'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
+import { createPackageJsonConfigRunner } from '../internal/apply/config-runner.ts'
 import { resolveConflictAction } from '../internal/conflict.ts'
 import { parseJson, readTextFileIfExists, writeTextFileIfChanged } from '../internal/files.ts'
 import { logDryRun, logInfo } from '../internal/log.ts'
@@ -8,6 +10,11 @@ import type { ApplyRuntimeOptions, ProjectContext } from '../internal/types.ts'
 
 const targetFormattingConfig = '@future-fuze/package-config/formatting'
 const targetFormattingConfigText = `"${targetFormattingConfig}"\n`
+const formattingConfigDirectory = dirname(fileURLToPath(import.meta.url))
+const runFormattingPackageJson = createPackageJsonConfigRunner({
+	configId: 'formatting',
+	configDirectory: formattingConfigDirectory
+})
 
 async function runOxfmt(projectRoot: string, dryRun: boolean): Promise<void> {
 	if (dryRun) {
@@ -46,6 +53,8 @@ export async function applyFormattingConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
 ): Promise<void> {
+	await runFormattingPackageJson(project, options)
+
 	const formattingConfigPath = join(project.projectRoot, '.prettierrc.json')
 	const existingFormattingText = await readTextFileIfExists(formattingConfigPath)
 

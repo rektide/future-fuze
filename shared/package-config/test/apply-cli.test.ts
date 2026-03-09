@@ -107,7 +107,7 @@ afterEach(async () => {
 
 			expect(result.code).toBe(0)
 			expect(result.stdout).toContain('[dry-run] Create tsconfig.json')
-		expect(result.stdout).toContain('[dry-run] Create .formattingrc.json')
+		expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
 	})
 
 	test('applies all configs with --config all', async () => {
@@ -116,7 +116,7 @@ afterEach(async () => {
 
 		expect(result.code).toBe(0)
 		expect(result.stdout).toContain('[dry-run] Create tsconfig.json')
-		expect(result.stdout).toContain('[dry-run] Create .formattingrc.json')
+		expect(result.stdout).toContain('[dry-run] Create .prettierrc.json')
 		expect(result.stdout).toContain('[dry-run] Apply concurrently package.json settings')
 		expect(result.stdout).toContain('[dry-run] Apply cdk8s package.json settings')
 	})
@@ -546,7 +546,7 @@ describe('apply CLI conflict handling', () => {
 
 	test('skips conflicting formatting config with --conflict skip', async () => {
 		const projectPath = await createFixtureProject('npm-project')
-		await writeFile(join(projectPath, '.formattingrc.json'), JSON.stringify({ semi: true }, null, 2), 'utf8')
+		await writeFile(join(projectPath, '.prettierrc.json'), JSON.stringify({ semi: true }, null, 2), 'utf8')
 
 		const result = await runApply(
 			['--config', 'formatting', '--dry-run', '--conflict', 'skip'],
@@ -559,7 +559,7 @@ describe('apply CLI conflict handling', () => {
 
 	test('overwrites conflicting formatting config with --conflict overwrite', async () => {
 		const projectPath = await createFixtureProject('npm-project')
-		const formattingPath = join(projectPath, '.formattingrc.json')
+		const formattingPath = join(projectPath, '.prettierrc.json')
 		await writeFile(formattingPath, JSON.stringify({ semi: true }, null, 2), 'utf8')
 
 		const dryRunResult = await runApply(
@@ -567,7 +567,7 @@ describe('apply CLI conflict handling', () => {
 			projectPath
 		)
 		expect(dryRunResult.code).toBe(0)
-		expect(dryRunResult.stdout).toContain('[dry-run] Apply Prettier config')
+		expect(dryRunResult.stdout).toContain('[dry-run] Apply Formatting config')
 
 		const applyResult = await runApply(['--config', 'formatting', '--conflict', 'overwrite'], projectPath)
 		expect(applyResult.code).toBe(0)
