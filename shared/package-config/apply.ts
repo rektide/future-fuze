@@ -12,6 +12,7 @@ import conflictPlugin from './gunshi/conflict.ts'
 import dryRunPlugin from './gunshi/dry-run.ts'
 import installPlugin from './gunshi/install.ts'
 import linkPlugin from './gunshi/link.ts'
+import { configureApplyLogging } from './gunshi/logging.ts'
 import loggingPlugin from './gunshi/logging.ts'
 import updatePlugin from './gunshi/update.ts'
 import { collectApplyTargetRoots } from './internal/targets.ts'
@@ -84,6 +85,7 @@ export const applyCommand = define({
 	},
 	run: async ctx => {
 		const options = parseApplyRuntimeOptions(ctx.values)
+		configureApplyLogging({ logFormat: options.logFormat })
 		const baseProject = await loadProjectContext()
 		const applyTargets = resolveApplyTargets(ctx.values.config)
 		const applyProjectRoots = await collectApplyTargetRoots({

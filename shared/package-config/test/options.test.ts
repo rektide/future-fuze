@@ -22,7 +22,10 @@ describe('parseApplyRuntimeOptions', () => {
 			dryRun: true,
 			verbose: true,
 			conflict: 'overwrite',
-			tsconfigProfile: 'cdk8s'
+			tsconfigProfile: 'cdk8s',
+			link: false,
+			skipInstall: false,
+			logFormat: 'bracket'
 		})
 	})
 

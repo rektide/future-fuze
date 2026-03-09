@@ -1,6 +1,6 @@
 import { applyEnumChoices, applyOptionDefaults } from './options/schema.ts'
 
-import type { ApplyRuntimeOptions, ConflictMode, TsconfigProfile } from './types.ts'
+import type { ApplyRuntimeOptions, ConflictMode, LogFormat, TsconfigProfile } from './types.ts'
 
 export interface ApplyCliValues {
 	update?: unknown
@@ -10,6 +10,7 @@ export interface ApplyCliValues {
 	tsconfigProfile?: unknown
 	link?: unknown
 	skipInstall?: unknown
+	logFormat?: unknown
 	[key: string]: unknown
 }
 
@@ -21,6 +22,7 @@ interface ApplyRawOptions {
 	tsconfigProfile: unknown
 	link: boolean
 	skipInstall: boolean
+	logFormat: unknown
 }
 
 function parseBooleanFlag(value: unknown, fallback: boolean): boolean {
@@ -59,7 +61,8 @@ function coerceApplyCliValues(values: ApplyCliValues): ApplyRawOptions {
 		conflict: values.conflict,
 		tsconfigProfile: values.tsconfigProfile,
 		link: parseBooleanFlag(values.link, applyOptionDefaults.link),
-		skipInstall: parseBooleanFlag(values.skipInstall, applyOptionDefaults.skipInstall)
+		skipInstall: parseBooleanFlag(values.skipInstall, applyOptionDefaults.skipInstall),
+		logFormat: values.logFormat
 	}
 }
 
@@ -79,7 +82,12 @@ export function normalizeApplyRuntimeOptions(raw: ApplyRawOptions): ApplyRuntime
 			applyOptionDefaults.tsconfigProfile
 		) as TsconfigProfile,
 		link: raw.link,
-		skipInstall: raw.skipInstall
+		skipInstall: raw.skipInstall,
+		logFormat: parseEnumChoice(
+			raw.logFormat,
+			applyEnumChoices.logFormat,
+			applyOptionDefaults.logFormat
+		) as LogFormat
 	}
 }
 

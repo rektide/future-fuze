@@ -1,13 +1,15 @@
-type LogScope = 'apply' | 'conflict' | 'file' | 'fmt' | 'install'
+import { printApplyLog } from '../gunshi/logging.ts'
+
+import type { LogScope } from '../gunshi/logging.ts'
 
 export function logInfo(scope: LogScope, message: string): void {
-	console.log(`[${scope}] ${message}`)
+	printApplyLog({ scope, message })
 }
 
 export function logDryRun(message: string): void {
-	console.log(`[dry-run] ${message}`)
+	printApplyLog({ scope: 'dry-run', message })
 }
 
 export function logVerbose(configId: string, message: string): void {
-	console.log(`[verbose] [${configId}] ${message}`)
+	printApplyLog({ scope: 'verbose', configId, message })
 }

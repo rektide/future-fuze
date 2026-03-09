@@ -5,6 +5,7 @@ export const conflictModes = ['error', 'overwrite', 'skip'] as const
 export type PackageManager = 'pnpm' | 'npm'
 export type MonorepoManager = 'pnpm' | 'npm'
 export type ActionStatus = 'created' | 'updated' | 'unchanged'
+export type LogFormat = 'bracket' | 'kv'
 
 export type ConflictMode = (typeof conflictModes)[number]
 export const defaultConflictMode: ConflictMode = 'error'
@@ -38,4 +39,5 @@ export interface ApplyRuntimeOptions {
 	tsconfigProfile: TsconfigProfile
 	link: boolean
 	skipInstall: boolean
+	logFormat: LogFormat
 }

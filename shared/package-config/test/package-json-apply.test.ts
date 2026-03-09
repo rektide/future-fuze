@@ -29,6 +29,7 @@ function createOptions(overrides: Partial<ApplyRuntimeOptions> = {}): ApplyRunti
 		tsconfigProfile: 'base',
 		link: false,
 		skipInstall: false,
+		logFormat: 'bracket',
 		...overrides
 	}
 }
