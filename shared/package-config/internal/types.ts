@@ -32,6 +32,7 @@ export interface ProjectContext {
 export interface ApplyRuntimeOptions {
 	update: boolean
 	dryRun: boolean
+	verbose: boolean
 	conflict: ConflictMode
 	tsconfigProfile: TsconfigProfile
 }

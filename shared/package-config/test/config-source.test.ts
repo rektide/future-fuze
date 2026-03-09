@@ -4,7 +4,7 @@ import { join } from 'node:path'
 
 import { afterEach, describe, expect, test } from 'vitest'
 
-import { loadNamedStringRecordConfig } from '../internal/config-source.ts'
+import { tryLoadNamedObjectConfig } from '../internal/config-source.ts'
 
 const temporaryDirectories: string[] = []
 
@@ -18,18 +18,18 @@ afterEach(async () => {
 	await Promise.all(temporaryDirectories.splice(0).map(directory => rm(directory, { recursive: true, force: true })))
 })
 
-describe('loadNamedStringRecordConfig', () => {
-		test('loads named export from TypeScript config file', async () => {
-			const directoryPath = await createTempDirectory()
-			await writeFile(
-				join(directoryPath, 'scripts.ts'),
-				"export const scripts = { 'test:tsgo': 'tsgo' }\n",
-				'utf8'
-			)
+describe('tryLoadNamedObjectConfig', () => {
+	test('loads named export from TypeScript config file', async () => {
+		const directoryPath = await createTempDirectory()
+		await writeFile(
+			join(directoryPath, 'scripts.ts'),
+			"export const scripts = { 'test:tsgo': 'tsgo' }\n",
+			'utf8'
+		)
 
-			const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
-			expect(loaded).toEqual({ 'test:tsgo': 'tsgo' })
-		})
+		const loaded = await tryLoadNamedObjectConfig(directoryPath, 'scripts', 'scripts')
+		expect(loaded).toEqual({ 'test:tsgo': 'tsgo' })
+	})
 
 	test('falls back to config export when named export is absent', async () => {
 		const directoryPath = await createTempDirectory()
@@ -39,7 +39,7 @@ describe('loadNamedStringRecordConfig', () => {
 			'utf8'
 		)
 
-		const loaded = await loadNamedStringRecordConfig(
+		const loaded = await tryLoadNamedObjectConfig(
 			directoryPath,
 			'devDependencies',
 			'devDependencies'
@@ -47,36 +47,42 @@ describe('loadNamedStringRecordConfig', () => {
 		expect(loaded).toEqual({ '@typescript/native-preview': '*' })
 	})
 
-		test('prefers TypeScript source over JSON source', async () => {
-			const directoryPath = await createTempDirectory()
-			await writeFile(
-				join(directoryPath, 'scripts.ts'),
-				"export const scripts = { 'test:tsgo': 'from-ts' }\n",
-				'utf8'
-			)
-			await writeFile(
-				join(directoryPath, 'scripts.json'),
-				JSON.stringify({ 'test:tsgo': 'from-json' }, null, 2),
-				'utf8'
-			)
+	test('prefers TypeScript source over JSON source', async () => {
+		const directoryPath = await createTempDirectory()
+		await writeFile(
+			join(directoryPath, 'scripts.ts'),
+			"export const scripts = { 'test:tsgo': 'from-ts' }\n",
+			'utf8'
+		)
+		await writeFile(
+			join(directoryPath, 'scripts.json'),
+			JSON.stringify({ 'test:tsgo': 'from-json' }, null, 2),
+			'utf8'
+		)
 
-			const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
-			expect(loaded).toEqual({ 'test:tsgo': 'from-ts' })
-		})
+		const loaded = await tryLoadNamedObjectConfig(directoryPath, 'scripts', 'scripts')
+		expect(loaded).toEqual({ 'test:tsgo': 'from-ts' })
+	})
 
-	test('treats empty JSON config source as no-op', async () => {
+	test('treats empty JSON config source as empty object', async () => {
 		const directoryPath = await createTempDirectory()
 		await writeFile(join(directoryPath, 'scripts.json'), '', 'utf8')
 
-		const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
+		const loaded = await tryLoadNamedObjectConfig(directoryPath, 'scripts', 'scripts')
 		expect(loaded).toEqual({})
 	})
 
-	test('treats empty TypeScript config source as no-op', async () => {
+	test('treats empty TypeScript config source as empty object', async () => {
 		const directoryPath = await createTempDirectory()
 		await writeFile(join(directoryPath, 'scripts.ts'), '', 'utf8')
 
-		const loaded = await loadNamedStringRecordConfig(directoryPath, 'scripts', 'scripts')
+		const loaded = await tryLoadNamedObjectConfig(directoryPath, 'scripts', 'scripts')
 		expect(loaded).toEqual({})
+	})
+
+	test('returns undefined when source file is absent', async () => {
+		const directoryPath = await createTempDirectory()
+		const loaded = await tryLoadNamedObjectConfig(directoryPath, 'scripts', 'scripts')
+		expect(loaded).toBeUndefined()
 	})
 })

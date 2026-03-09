@@ -60,6 +60,7 @@ node ./node_modules/@future-fuze/package-config/index.ts apply --config prettier
 node ./node_modules/@future-fuze/package-config/index.ts apply --config concurrently
 node ./node_modules/@future-fuze/package-config/index.ts apply --config cdk8s
 node ./node_modules/@future-fuze/package-config/index.ts apply --config vitest
+node ./node_modules/@future-fuze/package-config/index.ts apply --config esm
 node ./node_modules/@future-fuze/package-config/index.ts apply --config tsconfig --config prettier
 node ./node_modules/@future-fuze/package-config/index.ts apply --config all
 node ./node_modules/@future-fuze/package-config/index.ts apply --config all --recursive
@@ -69,11 +70,12 @@ node ./node_modules/@future-fuze/package-config/apply.ts --config prettier
 
 ### Global flags
 
-- `--config <name>`: config to apply (`tsconfig`, `prettier`, `concurrently`, `cdk8s`, `vitest`, `all`); repeat to apply multiple configs
+- `--config <name>`: config to apply (`tsconfig`, `prettier`, `concurrently`, `cdk8s`, `vitest`, `esm`, `all`); repeat to apply multiple configs
 - `--recursive`, `-r`: apply to each discovered package project under current project root
 - `--tsconfig-profile <profile>`: tsconfig profile (`base` default, `cdk8s`) when applying `tsconfig`
 - `--dry-run`: print planned install/file changes without writing
 - `--update`: install `@future-fuze/package-config@latest` as a dev dependency
+- `--verbose`: log each changed `package.json` JSON-path per config (`created` / `overwrote`)
 - `--conflict <mode>`: conflict handling strategy
   - `error` (default): fail when existing config conflicts
   - `overwrite`: replace conflicting config values
@@ -81,34 +83,21 @@ node ./node_modules/@future-fuze/package-config/apply.ts --config prettier
 
 ### Package config source files
 
-Package `devDependencies` and `scripts` settings are sourced from section files,
-not mixed nested structures:
+Package `package.json` updates are sourced from bundle-level files:
 
-- `typescript/devDependencies.json` or `typescript/devDependencies.ts`
-- `typescript/scripts.json` or `typescript/scripts.ts`
-- `typescript/tsconfig.json` or `typescript/tsconfig.ts`
-- `concurrently/devDependencies.json` or `concurrently/devDependencies.ts`
-- `concurrently/scripts.json` or `concurrently/scripts.ts`
-- `cdk8s/devDependencies.json` or `cdk8s/devDependencies.ts`
-- `cdk8s/scripts.json` or `cdk8s/scripts.ts`
-- `vitest/devDependencies.json` or `vitest/devDependencies.ts`
-- `vitest/scripts.json` or `vitest/scripts.ts`
+- `typescript/package.json`
+- `concurrently/package.json`
+- `cdk8s/package.json`
+- `vitest/package.json`
+- `esm/package.json`
 
-Optional monorepo root overrides can be provided in `recursive/` subfolders
-for configs that support package section updates:
+Optional monorepo-root overrides can be provided in `recursive/`:
 
-- `typescript/recursive/devDependencies.json` or `.ts`
-- `typescript/recursive/scripts.json` or `.ts`
-- `typescript/recursive/tsconfig.json` or `.ts`
-- `concurrently/recursive/devDependencies.json` or `.ts`
-- `concurrently/recursive/scripts.json` or `.ts`
-- `cdk8s/recursive/devDependencies.json` or `.ts`
-- `cdk8s/recursive/scripts.json` or `.ts`
-- `vitest/recursive/devDependencies.json` or `.ts`
-- `vitest/recursive/scripts.json` or `.ts`
-
-When using `.ts` files, export either the named key (`devDependencies` / `scripts`) or `config`.
+- `typescript/recursive/package.json`
+- `cdk8s/recursive/package.json`
 
 When applying from a monorepo root (detected via `pnpm-workspace.yaml` or npm `workspaces`),
-`recursive/*` is used when present. Leaf packages continue using non-recursive files.
-An empty recursive source file is treated as a no-op for that section.
+base `package.json` is merged first and `recursive/package.json` is merged after it when present.
+Leaf packages only use base `package.json`.
+
+An empty config source `package.json` is invalid and causes apply to fail.

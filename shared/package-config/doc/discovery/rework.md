@@ -25,3 +25,11 @@ Confidence scale: `0.0` (low confidence) to `1.0` (high confidence).
 - **Tighten domain grouping under `internal/`** (`confidence: 0.7`)
   - Example grouping: `internal/conflict/`, `internal/project/`, `internal/io/`, `internal/config-source/`.
   - Should happen after active refactors to avoid churn.
+
+- **Add optional collection conflict strategy flag** (`confidence: 0.65`)
+  - Candidate flag: `--conflict-collection merge|overwrite` (default `merge`).
+  - This could be useful if users want arrays replaced instead of additive merged.
+
+- **Emit machine-readable verbose logs** (`confidence: 0.72`)
+  - Keep current human logs, and optionally add `--verbose-format json` later.
+  - This can support tooling that audits exact config drift and applied changes.

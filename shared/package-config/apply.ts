@@ -5,20 +5,22 @@ import { pathToFileURL } from 'node:url'
 
 import { cli, define } from 'gunshi'
 
-import { applyCdk8sConfig } from './cdk8s/apply.ts'
-import { applyConcurrentlyConfig } from './concurrently/apply.ts'
+import { applyCdk8sConfig } from './cdk8s/apply.mts'
+import { applyConcurrentlyConfig } from './concurrently/apply.mts'
+import { applyEsmConfig } from './esm/apply.ts'
 import conflictPlugin from './gunshi/conflict.ts'
 import dryRunPlugin from './gunshi/dry-run.ts'
+import loggingPlugin from './gunshi/logging.ts'
 import updatePlugin from './gunshi/update.ts'
 import { collectApplyTargetRoots } from './internal/targets.ts'
 import { ensurePackageConfigDependency } from './internal/install.ts'
 import { parseApplyRuntimeOptions } from './internal/options.ts'
 import { loadProjectContext } from './internal/project.ts'
 import { applyPrettierConfig } from './prettier/apply.ts'
-import { applyTypescriptConfig } from './typescript/apply.ts'
-import { applyVitestConfig } from './vitest/apply.ts'
+import { applyTypescriptConfig } from './typescript/apply.mts'
+import { applyVitestConfig } from './vitest/apply.mts'
 
-const applyTargetChoices = ['tsconfig', 'prettier', 'concurrently', 'cdk8s', 'vitest'] as const
+const applyTargetChoices = ['tsconfig', 'prettier', 'concurrently', 'cdk8s', 'vitest', 'esm'] as const
 type ApplyTargetChoice = (typeof applyTargetChoices)[number]
 
 const configChoices = ['all', ...applyTargetChoices] as const
@@ -29,7 +31,8 @@ const configRunners: Record<ApplyTargetChoice, typeof applyTypescriptConfig> = {
 	prettier: applyPrettierConfig,
 	concurrently: applyConcurrentlyConfig,
 	cdk8s: applyCdk8sConfig,
-	vitest: applyVitestConfig
+	vitest: applyVitestConfig,
+	esm: applyEsmConfig
 }
 
 function resolveApplyTargets(configs: ConfigChoice[]): ApplyTargetChoice[] {
@@ -48,7 +51,7 @@ function resolveApplyTargets(configs: ConfigChoice[]): ApplyTargetChoice[] {
 }
 
 export function createApplyPlugins() {
-	return [updatePlugin(), dryRunPlugin(), conflictPlugin()]
+	return [updatePlugin(), dryRunPlugin(), conflictPlugin(), loggingPlugin()]
 }
 
 export const applyCommand = define({

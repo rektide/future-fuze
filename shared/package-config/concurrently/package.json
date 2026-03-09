@@ -1,0 +1,9 @@
+{
+	"devDependencies": {
+		"concurrently": "*"
+	},
+	"scripts": {
+		"build": "concurrently build:*",
+		"test": "concurrently test:*"
+	}
+}

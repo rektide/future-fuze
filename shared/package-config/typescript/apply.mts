@@ -2,11 +2,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 
-import {
-	loadNamedStringRecordConfig,
-	tryLoadNamedObjectConfig,
-	tryLoadNamedStringRecordConfig
-} from '../internal/config-source.ts'
+import { applyConfigPackageJson } from '../internal/apply/package-json.ts'
+import { tryLoadNamedObjectConfig } from '../internal/config-source.ts'
 import { resolveConflictAction } from '../internal/conflict.ts'
 import {
 	parseJsonWithComments,
@@ -14,7 +11,6 @@ import {
 	stringifyJson,
 	writeTextFileIfChanged
 } from '../internal/files.ts'
-import { applyPackageJsonSections } from '../internal/package-json-sections.ts'
 
 import type {
 	ApplyRuntimeOptions,
@@ -35,24 +31,6 @@ function resolveTsconfigExtends(profile: TsconfigProfile): string {
 	}
 
 	return '@future-fuze/package-config/typescript/base.json'
-}
-
-async function loadTypescriptPackageSectionConfig(
-	project: ProjectContext,
-	sectionName: 'devDependencies' | 'scripts'
-): Promise<Record<string, string>> {
-	if (project.isMonorepoRoot) {
-		const recursiveConfig = await tryLoadNamedStringRecordConfig(
-			recursiveTypescriptConfigDirectory,
-			sectionName,
-			sectionName
-		)
-		if (recursiveConfig !== undefined) {
-			return recursiveConfig
-		}
-	}
-
-	return loadNamedStringRecordConfig(typescriptConfigDirectory, sectionName, sectionName)
 }
 
 async function loadTypescriptTsconfigTemplate(
@@ -156,21 +134,17 @@ async function applyTypescriptPackageJsonConfig(
 	project: ProjectContext,
 	options: ApplyRuntimeOptions
 ): Promise<void> {
-	const targetDevDependencies = await loadTypescriptPackageSectionConfig(project, 'devDependencies')
-	const targetScripts = await loadTypescriptPackageSectionConfig(project, 'scripts')
-
-	await applyPackageJsonSections(
+	await applyConfigPackageJson({
 		project,
 		options,
-		{
-			devDependencies: targetDevDependencies,
-			scripts: targetScripts
-		},
-		{
+		configName: 'typescript',
+		configDirectory: typescriptConfigDirectory,
+		outputLabels: {
 			updated: 'Apply TypeScript package.json settings',
-			noChange: 'TypeScript package.json settings are already up-to-date'
+			noChange: 'TypeScript package.json settings are already up-to-date',
+			noSource: 'No TypeScript package.json source found'
 		}
-	)
+	})
 }
 
 async function applyTypescriptTsconfigFile(

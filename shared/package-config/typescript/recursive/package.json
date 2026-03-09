@@ -1,0 +1,5 @@
+{
+	"scripts": {
+		"test:tsgo": "pnpm -r run test:tsgo"
+	}
+}

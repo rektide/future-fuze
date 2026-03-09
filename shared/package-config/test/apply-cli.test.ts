@@ -121,6 +121,82 @@ afterEach(async () => {
 		expect(result.stdout).toContain('[dry-run] Apply cdk8s package.json settings')
 	})
 
+	test('lets multiple configs contribute to package.json objects', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const packageJsonPath = join(projectPath, 'package.json')
+
+		await writeFile(
+			packageJsonPath,
+			JSON.stringify(
+				{
+					name: 'fixture-npm-project',
+					version: '1.0.0',
+					private: true,
+					devDependencies: {
+						'@future-fuze/package-config': '*'
+					}
+				},
+				null,
+				2
+			),
+			'utf8'
+		)
+
+		const result = await runApply(
+			['--config', 'concurrently', '--config', 'cdk8s', '--conflict', 'overwrite'],
+			projectPath
+		)
+
+		expect(result.code).toBe(0)
+
+		const saved = JSON.parse(await readFile(packageJsonPath, 'utf8')) as {
+			devDependencies: Record<string, string>
+			scripts: Record<string, string>
+		}
+		expect(saved.devDependencies.concurrently).toBe('*')
+		expect(saved.scripts.build).toBe('concurrently build:*')
+		expect(saved.scripts.test).toBe('concurrently test:*')
+		expect(saved.scripts['build:cdk8s']).toBe('cdk8s synth')
+	})
+
+	test('prints verbose JSON-path changes when verbose mode is enabled', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const result = await runApply(['--config', 'concurrently', '--dry-run', '--verbose'], projectPath)
+
+		expect(result.code).toBe(0)
+		expect(result.stdout).toContain('[verbose] [concurrently] created: $.devDependencies.concurrently')
+		expect(result.stdout).toContain('[verbose] [concurrently] created: $.scripts.build')
+		expect(result.stdout).toContain('[verbose] [concurrently] created: $.scripts.test')
+	})
+
+	test('applies esm package type config', async () => {
+		const projectPath = await createFixtureProject('npm-project')
+		const packageJsonPath = join(projectPath, 'package.json')
+
+		await writeFile(
+			packageJsonPath,
+			JSON.stringify(
+				{
+					name: 'fixture-npm-project',
+					version: '1.0.0',
+					private: true,
+					devDependencies: {
+						'@future-fuze/package-config': '*'
+					}
+				},
+				null,
+				2
+			),
+			'utf8'
+		)
+
+		const result = await runApply(['--config', 'esm', '--conflict', 'overwrite'], projectPath)
+		expect(result.code).toBe(0)
+
+		const saved = JSON.parse(await readFile(packageJsonPath, 'utf8')) as { type?: string }
+		expect(saved.type).toBe('module')
+	})
+
 	test('applies recursively with --recursive', async () => {
 		const projectPath = await createFixtureProject('npm-workspace')
 		const result = await runApply(['--config', 'tsconfig', '--dry-run', '--recursive'], projectPath)

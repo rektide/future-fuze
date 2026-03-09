@@ -12,6 +12,7 @@ const conflictModeSet = new Set<ConflictMode>(conflictModes)
 interface ApplyOptionValues {
 	update?: boolean
 	dryRun?: boolean
+	verbose?: boolean
 	conflict?: unknown
 	tsconfigProfile?: string
 	[key: string]: unknown
@@ -29,6 +30,7 @@ export function parseApplyRuntimeOptions(values: ApplyOptionValues): ApplyRuntim
 	return {
 		update: values.update === true,
 		dryRun: values.dryRun === true,
+		verbose: values.verbose === true,
 		conflict: parseConflictMode(values.conflict),
 		tsconfigProfile:
 			values.tsconfigProfile && tsconfigProfiles.has(values.tsconfigProfile as TsconfigProfile)

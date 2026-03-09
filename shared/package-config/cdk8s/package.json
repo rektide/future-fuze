@@ -1,0 +1,5 @@
+{
+	"scripts": {
+		"build:cdk8s": "cdk8s synth"
+	}
+}

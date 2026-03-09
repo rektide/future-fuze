@@ -1,0 +1,8 @@
+{
+	"devDependencies": {
+		"@typescript/native-preview": "*"
+	},
+	"scripts": {
+		"test:tsgo": "tsgo"
+	}
+}
