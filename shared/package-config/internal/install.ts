@@ -1,1 +1,1 @@
-export { ensurePackageConfigDependency } from '../dep/install.ts'
+export { ensurePackageConfigDependency, runPackageManagerInstall } from '../dep/install.ts'

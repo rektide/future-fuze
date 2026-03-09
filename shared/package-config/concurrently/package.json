@@ -3,7 +3,7 @@
 		"concurrently": "*"
 	},
 	"scripts": {
-		"build": "concurrently build:*",
-		"test": "concurrently test:*"
+		"build": "concurrently pnpm:build:*",
+		"test": "concurrently pnpm:test:*"
 	}
 }

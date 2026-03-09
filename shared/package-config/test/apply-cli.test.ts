@@ -154,8 +154,8 @@ afterEach(async () => {
 			scripts: Record<string, string>
 		}
 		expect(saved.devDependencies.concurrently).toBe('*')
-		expect(saved.scripts.build).toBe('concurrently build:*')
-		expect(saved.scripts.test).toBe('concurrently test:*')
+		expect(saved.scripts.build).toBe('concurrently pnpm:build:*')
+		expect(saved.scripts.test).toBe('concurrently pnpm:test:*')
 		expect(saved.scripts['build:cdk8s']).toBe('cdk8s synth')
 	})
 
@@ -458,8 +458,8 @@ describe('apply CLI conflict handling', () => {
 			scripts: Record<string, string>
 		}
 		expect(saved.devDependencies.concurrently).toBe('*')
-		expect(saved.scripts.build).toBe('concurrently build:*')
-		expect(saved.scripts.test).toBe('concurrently test:*')
+		expect(saved.scripts.build).toBe('concurrently pnpm:build:*')
+		expect(saved.scripts.test).toBe('concurrently pnpm:test:*')
 	})
 
 	test('applies typescript package.json scripts and devDependencies', async () => {

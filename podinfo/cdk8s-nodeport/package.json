@@ -5,10 +5,10 @@
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
-		"build": "concurrently build:*",
+		"build": "concurrently -n build:*",
 		"synth": "cdk8s synth",
 		"test:tsgo": "tsgo",
-		"test": "concurrently test:*",
+		"test": "concurrently -n test:*",
 		"build:cdk8s": "cdk8s synth",
 		"test:vitest": "vitest run"
 	},
